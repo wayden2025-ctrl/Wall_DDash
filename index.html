@@ -12,7 +12,14 @@
         <div class="ad-placeholder-mobile">Advertisement<br>320 x 50</div>
     </div>
 
-    <div id="game-container" style="flex: 1; width: 100%;">
+    <div class="desktop-main-layout" style="display: flex; flex: 1; width: 100%;">
+        <!-- Left Desktop Ads -->
+        <div class="ad-space-desktop left-ad">
+            <div class="ad-placeholder-desktop">Advertisement<br>160 x 600</div>
+            <div class="ad-placeholder-desktop">Advertisement<br>300 x 250</div>
+        </div>
+
+        <div id="game-container" style="flex: 1; width: 100%;">
         <canvas id="game-canvas"></canvas>
         
         <div id="ui-layer">
@@ -48,6 +55,13 @@
                 <p>Time Survived: <span id="win-time">0</span>s</p>
             </div>
             <button id="win-restart-btn">PLAY AGAIN</button>
+        </div>
+        </div>
+        
+        <!-- Right Desktop Ads -->
+        <div class="ad-space-desktop right-ad">
+            <div class="ad-placeholder-desktop">Advertisement<br>160 x 600</div>
+            <div class="ad-placeholder-desktop">Advertisement<br>300 x 250</div>
         </div>
     </div>
 

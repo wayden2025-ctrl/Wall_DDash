@@ -225,8 +225,40 @@ p {
 }
 
 /* Hide mobile ads on desktop */
-@media (min-width: 600px) {
+@media (min-width: 1000px) {
     .ad-space-mobile {
         display: none;
+    }
+}
+
+/* Desktop Ad Spaces */
+.ad-space-desktop {
+    display: none;
+    flex: 1;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+    background: #0f0f15;
+}
+.left-ad { border-right: 1px solid #222; }
+.right-ad { border-left: 1px solid #222; }
+
+.ad-placeholder-desktop {
+    background: #1a1a24;
+    border: 1px dashed #444;
+    color: #666;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    font-size: 12px;
+}
+.ad-placeholder-desktop:nth-child(1) { width: 160px; height: 600px; }
+.ad-placeholder-desktop:nth-child(2) { width: 300px; height: 250px; }
+
+/* Show desktop ads on screens wider than 1000px */
+@media (min-width: 1000px) {
+    .ad-space-desktop {
+        display: flex;
     }
 }
