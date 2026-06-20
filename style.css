@@ -1,0 +1,192 @@
+:root {
+    --bg-color: #0a0a0c;
+    --lane-color: rgba(255, 255, 255, 0.05);
+    --lane-divider: rgba(0, 255, 255, 0.3);
+    --player-color: #00ffff;
+    --player-glow: 0 0 15px #00ffff, 0 0 30px #00ffff;
+    --obstacle-color: #ff0055;
+    --obstacle-glow: 0 0 15px #ff0055;
+    --text-color: #ffffff;
+    --perfect-color: #ffff00;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+}
+
+body, html {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: var(--bg-color);
+    font-family: 'Courier New', Courier, monospace;
+    color: var(--text-color);
+}
+
+#game-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    background-color: #050508;
+    overflow: hidden;
+    box-shadow: 0 0 50px rgba(0,0,0,0.8);
+}
+
+#game-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+/* UI Layer */
+#ui-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+#score-display {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 32px;
+    font-weight: bold;
+    text-shadow: 0 0 10px #fff;
+    z-index: 10;
+}
+
+#combo-display {
+    position: absolute;
+    top: 60px;
+    right: 20px;
+    font-size: 24px;
+    color: var(--player-color);
+    text-shadow: var(--player-glow);
+    font-weight: bold;
+    z-index: 10;
+    transition: transform 0.1s ease-out;
+}
+
+#combo-display.pop {
+    transform: scale(1.5);
+}
+
+#perfect-text {
+    position: absolute;
+    top: 30%;
+    width: 100%;
+    text-align: center;
+    font-size: 48px;
+    font-weight: bold;
+    color: var(--perfect-color);
+    text-shadow: 0 0 20px var(--perfect-color);
+    opacity: 0;
+    animation: perfectAnim 0.5s ease-out forwards;
+}
+
+@keyframes perfectAnim {
+    0% { transform: scale(0.5); opacity: 1; }
+    50% { transform: scale(1.2); opacity: 1; }
+    100% { transform: scale(1.5); opacity: 0; }
+}
+
+/* Screens */
+#game-over-screen, #start-screen, #win-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 20;
+    backdrop-filter: blur(5px);
+}
+
+h1 {
+    font-size: 48px;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 5px;
+    text-shadow: var(--player-glow);
+    text-align: center;
+}
+
+#game-over-screen h1 {
+    color: var(--obstacle-color);
+    text-shadow: var(--obstacle-glow);
+}
+
+.stats {
+    font-size: 24px;
+    margin-bottom: 40px;
+    text-align: center;
+    line-height: 1.5;
+}
+
+button {
+    padding: 15px 40px;
+    font-size: 24px;
+    font-family: inherit;
+    font-weight: bold;
+    color: var(--bg-color);
+    background-color: var(--player-color);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    box-shadow: var(--player-glow);
+    transition: transform 0.1s, background-color 0.2s;
+    text-transform: uppercase;
+}
+
+button:hover {
+    transform: scale(1.05);
+    background-color: #fff;
+    box-shadow: 0 0 20px #fff;
+}
+
+button:active {
+    transform: scale(0.95);
+}
+
+p {
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: #ccc;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Shake effect for game container */
+@keyframes shake {
+    0% { transform: translate(1px, 1px) rotate(0deg); }
+    10% { transform: translate(-1px, -2px) rotate(-1deg); }
+    20% { transform: translate(-3px, 0px) rotate(1deg); }
+    30% { transform: translate(3px, 2px) rotate(0deg); }
+    40% { transform: translate(1px, -1px) rotate(1deg); }
+    50% { transform: translate(-1px, 2px) rotate(-1deg); }
+    60% { transform: translate(-3px, 1px) rotate(0deg); }
+    70% { transform: translate(3px, 1px) rotate(-1deg); }
+    80% { transform: translate(-1px, -1px) rotate(1deg); }
+    90% { transform: translate(1px, 2px) rotate(0deg); }
+    100% { transform: translate(1px, -2px) rotate(-1deg); }
+}
+
+.shake {
+    animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) both;
+}

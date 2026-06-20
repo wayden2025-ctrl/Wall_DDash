@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Wall Dash</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="game-canvas"></canvas>
+        
+        <div id="ui-layer">
+            <div id="score-display">0</div>
+            <div id="combo-display" class="hidden">x1</div>
+            <div id="perfect-text" class="hidden">PERFECT!</div>
+        </div>
+
+        <div id="game-over-screen" class="hidden">
+            <h1>GAME OVER</h1>
+            <div class="stats">
+                <p>Score: <span id="final-score">0</span></p>
+                <p>Best Combo: <span id="final-combo">0</span></p>
+            </div>
+            <button id="restart-btn">RESTART (Space)</button>
+        </div>
+        
+        <div id="start-screen">
+            <h1>WALL DASH</h1>
+            <p>Tap, Click, or Space to switch lanes.</p>
+            <p>Dodge obstacles.</p>
+            <p style="margin-top: 20px; color: #ffcc00; font-size: 14px; text-shadow: 0 0 8px rgba(255,204,0,0.4);">If you reach 1,000,000 points in Wall Dash, you'll unlock several surprise prizes!</p>
+            <button id="start-btn">START</button>
+        </div>
+
+        <div id="win-screen" class="hidden">
+            <h1 style="color: #ffcc00; text-shadow: 0 0 30px #ffcc00, 0 0 60px #ff8800;">🏆 YOU WON 🏆</h1>
+            <p style="font-size: 22px; color: #fff; margin-bottom: 10px;">1,000,000 POINTS</p>
+            <p style="font-size: 16px; color: #ffcc00;">You are a Wall Dash legend.</p>
+            <div class="stats">
+                <p>Final Score: <span id="win-score">0</span></p>
+                <p>Best Combo: <span id="win-combo">0</span></p>
+                <p>Time Survived: <span id="win-time">0</span>s</p>
+            </div>
+            <button id="win-restart-btn">PLAY AGAIN</button>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
