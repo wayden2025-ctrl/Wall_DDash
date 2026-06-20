@@ -171,12 +171,12 @@ function canSpawnOnLane(lane, yPos) {
 
 function spawnObstacle() {
     const yPos = -SPIKE_BASE;
-    // Alternate walls so spikes are evenly distributed, with some randomness
+    // Alternate walls so spikes are evenly distributed, avoiding random unfair clumps
     let lane;
-    if (lastSpawnLane === -1 || Math.random() < 0.15) {
-        lane = Math.random() < 0.5 ? 0 : 1; // occasional random pick
+    if (lastSpawnLane === -1) {
+        lane = Math.random() < 0.5 ? 0 : 1; 
     } else {
-        lane = lastSpawnLane === 0 ? 1 : 0;  // alternate
+        lane = lastSpawnLane === 0 ? 1 : 0;  // perfect alternate
     }
 
     if (!canSpawnOnLane(lane, yPos)) {
@@ -197,17 +197,21 @@ function spawnObstacle() {
         passed: false
     });
 
-    // Spawn interval based on score/time
+    // Spawn interval based on physical distance and current speed
     if (score >= 950000) {
         // HELL MODE: nearly impossible, relentless zig-zag
-        // Spawns a spike every 120-200 pixels physically, forcing insane rapid tapping
-        spawnTimer = (120 + Math.random() * 80) / currentSpeed;
+        // Spawns a spike every 70-100 pixels physically. Insanely tight but mathematically possible.
+        spawnTimer = (70 + Math.random() * 30) / currentSpeed;
     } else {
-        // Normal: gradually increase spike density over the first 40 seconds
+        // Normal: gradually increase spike density (decrease distance) over the first 40 seconds
         const difficulty = Math.min(1, timeSurvived / 40); // 0.0 to 1.0
-        const minInterval = 0.5 - (0.35 * difficulty); // Starts at 0.5s, drops to 0.15s
-        const randomRange = 0.7 - (0.45 * difficulty); // Starts at 0.7s range, drops to 0.25s
-        spawnTimer = minInterval + Math.random() * randomRange;
+        
+        // Start with 500-700px gap, scale down to 200-250px gap
+        const minDistance = 500 - (300 * difficulty); // 500 -> 200
+        const randomRange = 200 - (150 * difficulty); // 200 -> 50
+        
+        const targetDistance = minDistance + (Math.random() * randomRange);
+        spawnTimer = targetDistance / currentSpeed;
     }
 }
 
@@ -421,13 +425,13 @@ function loop(timestamp) {
         return;
     }
 
-    // Speed curve (capped at 3000, which is the old "30% speed")
+    // Speed curve (capped at 1500 to keep it manageable and reliant on spike density)
     if (score >= 950000) {
-        // 10% jump for Hell mode (3300)
-        currentSpeed = 3300;
+        // Massive speed jump for Hell mode (2500)
+        currentSpeed = 2500;
     } else {
         currentSpeed = baseSpeed * Math.pow(1.05, timeSurvived);
-        currentSpeed = Math.min(currentSpeed, 3000);
+        currentSpeed = Math.min(currentSpeed, 1500);
     }
 
     // Smooth player position
