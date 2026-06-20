@@ -420,7 +420,10 @@ function triggerWin() {
 function loop(timestamp) {
     if (!isPlaying) return;
 
-    const rawDt = (timestamp - lastTime) / 1000;
+    let rawDt = (timestamp - lastTime) / 1000;
+    // Cap max delta time to 0.1s to prevent huge skips if the game lags or resumes
+    if (rawDt > 0.1) rawDt = 0.1;
+    
     lastTime = timestamp;
     const dt = rawDt * timeScale;
 
@@ -721,3 +724,10 @@ function drawHUD(w, h) {
 // ═══ Boot ═══
 resize();
 draw();
+
+// Instantly kill the player if they leave the tab
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden && isPlaying) {
+        triggerGameOver();
+    }
+});
