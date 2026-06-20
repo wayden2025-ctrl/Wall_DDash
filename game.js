@@ -176,8 +176,8 @@ function spawnObstacle() {
     if (lastSpawnLane === -1) {
         lane = Math.random() < 0.5 ? 0 : 1; 
     } else if (score >= 50000 && score < 950000) {
-        // Mid-to-late: "spread out everywhere", 30% chance to spawn on same wall
-        lane = Math.random() < 0.3 ? lastSpawnLane : (lastSpawnLane === 0 ? 1 : 0);
+        // Mid-to-late: "more randomness", purely random 50/50 to spread everywhere
+        lane = Math.random() < 0.5 ? 0 : 1;
     } else {
         // Early game and Hell mode: perfect alternate
         lane = lastSpawnLane === 0 ? 1 : 0;
@@ -207,15 +207,18 @@ function spawnObstacle() {
         // Spawns a spike every 70-100 pixels physically. Insanely tight but mathematically possible.
         spawnTimer = (70 + Math.random() * 30) / currentSpeed;
     } else if (score >= 50000) {
-        // MID-TO-LATE GAME: Big step up in density. Gap shrinks to 150-300px.
-        const minDistance = 150;
-        const randomRange = 150;
+        // MID-TO-LATE GAME: "Harder and harder the farther you go"
+        const midDifficulty = Math.min(1, (score - 50000) / 900000); // 0.0 to 1.0 from 50k to 950k
+        
+        // Gap drops from 250px down to 100px as you approach 950k
+        const minDistance = 250 - (150 * midDifficulty); 
+        const randomRange = 150 - (100 * midDifficulty); // Range shrinks so spikes get tighter and tighter
         spawnTimer = (minDistance + Math.random() * randomRange) / currentSpeed;
     } else {
         // EARLY GAME (0 to 50k): Gentle ramp up
         const difficulty = Math.min(1, score / 50000); // 0.0 to 1.0
-        const minDistance = 600 - (300 * difficulty); // 600 -> 300
-        const randomRange = 200 - (50 * difficulty); // 200 -> 150
+        const minDistance = 500 - (250 * difficulty); // 500 -> 250
+        const randomRange = 200 - (100 * difficulty); // 200 -> 100
         spawnTimer = (minDistance + Math.random() * randomRange) / currentSpeed;
     }
 }
