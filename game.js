@@ -196,8 +196,8 @@ function spawnObstacle() {
     obstacles.push({
         lane,
         y: yPos,
-        height: SPIKE_BASE + Math.random() * 15,
-        depth: SPIKE_DEPTH + Math.random() * 20,
+        height: SPIKE_BASE + Math.random() * 40,
+        depth: SPIKE_DEPTH + Math.random() * 35,
         passed: false
     });
 
@@ -331,13 +331,13 @@ function triggerPerfect() {
 //  PARTICLES
 // ════════════════════════════════════════════════════════════════
 function spawnParticles(x, y, color) {
-    for (let i = 0; i < 15; i++) {
+    for (let i = 0; i < 60; i++) {
         particles.push({
             x, y,
-            vx: (Math.random() - 0.5) * 500,
-            vy: (Math.random() - 0.5) * 500,
-            life: 1,
-            color
+            vx: (Math.random() - 0.5) * 1500,
+            vy: (Math.random() - 0.5) * 1500,
+            life: 1.5 + Math.random(),
+            color: Math.random() > 0.5 ? '#00ffff' : '#ff00ff'
         });
     }
 }
@@ -468,8 +468,20 @@ function loop(timestamp) {
     spawnTimer -= dt;
     if (spawnTimer <= 0) spawnObstacle();
 
-    // Scroll offset for cosmetic grid
-    scrollOffset = (scrollOffset + currentSpeed * dt) % 40;
+    // Player comet trail particles
+    if (isPlaying && Math.random() < 0.6) {
+        particles.push({
+            x: player.visualX + (Math.random() - 0.5) * (PLAYER_RADIUS * 0.8),
+            y: player.visualY + PLAYER_RADIUS,
+            vx: (Math.random() - 0.5) * 50,
+            vy: currentSpeed * 0.4 + Math.random() * 100, // drag down
+            color: '#00ffff',
+            life: 0.6 + Math.random() * 0.4
+        });
+    }
+
+    // Scroll offset for perspective grid
+    scrollOffset = (scrollOffset + currentSpeed * dt) % 800;
 
     // Update obstacles
     for (let i = obstacles.length - 1; i >= 0; i--) {
