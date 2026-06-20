@@ -190,3 +190,43 @@ p {
 .shake {
     animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) both;
 }
+
+/* Mobile Ad Spaces */
+.ad-space-mobile {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #0f0f15;
+    height: 70px;
+    flex-shrink: 0;
+    border-top: 1px solid #222;
+    border-bottom: 1px solid #222;
+}
+
+.top-ad {
+    border-top: none;
+}
+
+.bottom-ad {
+    border-bottom: none;
+}
+
+.ad-placeholder-mobile {
+    width: 320px;
+    height: 50px;
+    background: #1a1a24;
+    border: 1px dashed #444;
+    color: #666;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    font-size: 12px;
+}
+
+/* Hide mobile ads on desktop */
+@media (min-width: 600px) {
+    .ad-space-mobile {
+        display: none;
+    }
+}

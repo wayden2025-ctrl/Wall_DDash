@@ -6,8 +6,13 @@
     <title>Wall Dash</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
-    <div id="game-container">
+<body style="display: flex; flex-direction: column; width: 100vw; height: 100vh;">
+    <!-- Top Mobile Ad Space -->
+    <div class="ad-space-mobile top-ad">
+        <div class="ad-placeholder-mobile">Advertisement<br>320 x 50</div>
+    </div>
+
+    <div id="game-container" style="flex: 1; width: 100%;">
         <canvas id="game-canvas"></canvas>
         
         <div id="ui-layer">
@@ -44,6 +49,11 @@
             </div>
             <button id="win-restart-btn">PLAY AGAIN</button>
         </div>
+    </div>
+
+    <!-- Bottom Mobile Ad Space -->
+    <div class="ad-space-mobile bottom-ad">
+        <div class="ad-placeholder-mobile">Advertisement<br>320 x 50</div>
     </div>
 
     <script src="game.js"></script>
