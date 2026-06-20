@@ -421,9 +421,14 @@ function loop(timestamp) {
         return;
     }
 
-    // True exponential speed curve — doubles every ~14s, cap at 8000
-    currentSpeed = baseSpeed * Math.pow(1.05, timeSurvived);
-    currentSpeed = Math.min(currentSpeed, 8000);
+    // Speed curve (capped at 3000, which is the old "30% speed")
+    if (score >= 950000) {
+        // 10% jump for Hell mode (3300)
+        currentSpeed = 3300;
+    } else {
+        currentSpeed = baseSpeed * Math.pow(1.05, timeSurvived);
+        currentSpeed = Math.min(currentSpeed, 3000);
+    }
 
     // Smooth player position
     const lerp = Math.min(1, 35 * dt); // faster horizontal snap
@@ -689,15 +694,6 @@ function drawHUD(w, h) {
         ctx.fillText(String(combo), WALL_WIDTH + 8, 54);
     }
 
-    // ── Speed indicator right wall ────
-    ctx.font = '12px "Courier New", monospace';
-    ctx.fillStyle = 'rgba(255,255,255,0.35)';
-    ctx.textAlign = 'right';
-    ctx.fillText('SPEED', w - WALL_WIDTH - 8, 30);
-    ctx.font = 'bold 18px "Courier New", monospace';
-    const speedPct = Math.min(100, Math.round(((currentSpeed - baseSpeed) / (8000 - baseSpeed)) * 100));
-    ctx.fillStyle = speedPct > 70 ? '#ff5555' : speedPct > 40 ? '#ffaa33' : '#aaaaaa';
-    ctx.fillText(`${speedPct}%`, w - WALL_WIDTH - 8, 52);
 
     ctx.restore();
 }
