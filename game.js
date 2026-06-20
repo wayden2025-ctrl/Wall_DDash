@@ -197,13 +197,17 @@ function spawnObstacle() {
         passed: false
     });
 
-    // Spawn interval based on score
+    // Spawn interval based on score/time
     if (score >= 950000) {
-        // HELL MODE: nearly impossible wall of spikes
-        spawnTimer = 0.05 + Math.random() * 0.07;
+        // HELL MODE: nearly impossible, relentless zig-zag
+        // Spawns a spike every 120-200 pixels physically, forcing insane rapid tapping
+        spawnTimer = (120 + Math.random() * 80) / currentSpeed;
     } else {
-        // Normal: tight random interval 0.15s – 0.4s
-        spawnTimer = 0.15 + Math.random() * 0.25;
+        // Normal: gradually increase spike density over the first 40 seconds
+        const difficulty = Math.min(1, timeSurvived / 40); // 0.0 to 1.0
+        const minInterval = 0.5 - (0.35 * difficulty); // Starts at 0.5s, drops to 0.15s
+        const randomRange = 0.7 - (0.45 * difficulty); // Starts at 0.7s range, drops to 0.25s
+        spawnTimer = minInterval + Math.random() * randomRange;
     }
 }
 
