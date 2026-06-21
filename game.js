@@ -410,8 +410,7 @@ function startGame() {
     perfectText.style.animation = 'none';
     
     if (publisherContent) {
-        publisherContent.style.opacity = '0';
-        setTimeout(() => publisherContent.style.display = 'none', 500);
+        publisherContent.style.display = 'none';
     }
 
     resize();
@@ -433,12 +432,6 @@ function gameOver() {
     gameOverScreen.classList.remove('hidden');
     finalScoreEl.innerText = Math.floor(score);
     finalComboEl.innerText = maxCombo;
-    
-    if (publisherContent) {
-        publisherContent.style.display = 'block';
-        publisherContent.offsetHeight; // trigger reflow
-        publisherContent.style.opacity = '1';
-    }
 }
 
 function triggerWin() {
@@ -452,12 +445,6 @@ function triggerWin() {
     winScoreEl.innerText = Math.floor(score).toLocaleString();
     winComboEl.innerText = maxCombo;
     winTimeEl.innerText = Math.floor(timeSurvived);
-    
-    if (publisherContent) {
-        publisherContent.style.display = 'block';
-        publisherContent.offsetHeight; // trigger reflow
-        publisherContent.style.opacity = '1';
-    }
 }
 
 // ════════════════════════════════════════════════════════════════
