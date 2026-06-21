@@ -64,26 +64,55 @@
 
             <!-- Publisher Content Section for AdSense Policy Compliance -->
             <div id="publisher-content" style="max-width: 800px; margin: 40px auto; padding: 20px; font-family: 'Courier New', Courier, monospace; color: #a0a0b0; line-height: 1.6; text-align: left;">
-                <h2 style="color: #00ffff; margin-bottom: 15px; font-size: 24px;">About Wall Dash</h2>
+                <h2 style="color: #00ffff; margin-bottom: 15px; font-size: 24px;">About Wall Dash: The Cyber Void</h2>
                 <p style="margin-bottom: 20px; font-size: 15px;">
-                    <strong>Wall Dash</strong> is a fast-paced neon arcade game. Survive by dodging crystal spikes as the speed continuously increases.
+                    <strong>Wall Dash</strong> is a high-octane, reflex-driven endless runner set deep within the neon-lit confines of the Cyber Void. As a rogue data packet, your objective is to survive for as long as possible while the system attempts to purge you using an array of deadly, crystallized security spikes. The longer you survive, the faster the system purges, demanding lightning-fast reflexes and flawless timing.
                 </p>
 
-                <h3 style="color: #ff00ff; margin-bottom: 10px; font-size: 20px;">How to Play</h3>
+                <h3 style="color: #ff00ff; margin-bottom: 10px; font-size: 20px;">How to Play & Master the Game</h3>
+                <p style="margin-bottom: 10px; font-size: 15px;">
+                    The controls are beautifully simple but incredibly hard to master. You can tap the screen on mobile devices, click your mouse, or press the Spacebar on your keyboard to instantly switch from the left wall to the right wall.
+                </p>
                 <p style="margin-bottom: 20px; font-size: 15px;">
-                    Tap the screen, Click your mouse, or press Spacebar to switch walls and dodge the incoming obstacles. Timing a dodge at the very last second before impact grants a "PERFECT!" rating, dramatically increasing your score multiplier.
+                    <strong>Pro Tip:</strong> Timing is everything. While you can spam the dash button to stay safe, timing your dashes at the very last second before impact will grant you a "PERFECT!" dodge rating. Chaining these perfect dodges together will dramatically increase your score multiplier, allowing you to dominate the leaderboards!
                 </p>
 
-                <h3 style="color: #00ffff; margin-bottom: 10px; font-size: 20px;">Features</h3>
+                <h3 style="color: #00ffff; margin-bottom: 10px; font-size: 20px;">Key Features</h3>
                 <ul style="margin-left: 20px; margin-bottom: 20px; font-size: 15px;">
-                    <li style="margin-bottom: 8px;"><strong>Responsive Controls:</strong> Instant lane switching with zero delay, optimized for both desktop and mobile.</li>
-                    <li style="margin-bottom: 8px;"><strong>Premium Visuals:</strong> Experience glowing neon graphics, particle bursts, and a multi-layered parallax background.</li>
-                    <li style="margin-bottom: 8px;"><strong>Dynamic Difficulty:</strong> The speed and intensity of the game automatically scale up the longer you survive.</li>
+                    <li style="margin-bottom: 8px;"><strong>Hyper-Responsive Controls:</strong> Enjoy zero-latency lane switching, perfectly optimized for both high-refresh-rate desktop monitors and mobile touchscreens.</li>
+                    <li style="margin-bottom: 8px;"><strong>Premium Cyberpunk Aesthetics:</strong> Immerse yourself in glowing neon graphics, dynamic particle burst effects upon near-misses, and a mesmerizing Matrix-style code rain background.</li>
+                    <li style="margin-bottom: 8px;"><strong>Dynamic Difficulty Scaling:</strong> There are no levels—only an infinite vertical tunnel that continuously accelerates. The speed and intensity of the obstacle generation automatically scale up the longer you manage to stay alive.</li>
+                    <li style="margin-bottom: 8px;"><strong>Cross-Platform Play:</strong> Designed entirely in HTML5 and pure JavaScript, Wall Dash runs flawlessly in your browser without any downloads required.</li>
                 </ul>
             </div>
+            
+            <!-- Site Footer -->
+            <footer class="site-footer">
+                <a href="index.html">Home</a>
+                <a href="privacy.html">Privacy Policy</a>
+                <a href="terms.html">Terms of Service</a>
+                <a href="mailto:contact@walldash.com">Contact Us</a>
+                <p>&copy; 2026 Wall Dash. All rights reserved.</p>
+            </footer>
         </div>
         <!-- Right spacer for balance -->
         <div class="ad-space-desktop right-ad" style="flex: 0 0 320px;"></div>
     </div>
+    <div id="cookie-banner" class="cookie-banner">
+        <p>We use cookies to personalize content, provide social media features, and analyze our traffic. We also share information about your use of our site with our advertising and analytics partners. <a href="privacy.html">Learn more</a>.</p>
+        <button id="accept-cookies" class="cookie-btn">Accept Cookies</button>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            if (!localStorage.getItem('cookiesAccepted')) {
+                document.getElementById('cookie-banner').style.display = 'flex';
+            }
+            document.getElementById('accept-cookies').addEventListener('click', function() {
+                localStorage.setItem('cookiesAccepted', 'true');
+                document.getElementById('cookie-banner').style.display = 'none';
+            });
+        });
+    </script>
 </body>
 </html>
