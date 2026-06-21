@@ -76,17 +76,43 @@ let scrollOffset = 0;
 let screenShakeTime = 0;
 let screenShakeIntensity = 0;
 
-// Initialize Background Objects
-for (let i = 0; i < 20; i++) {
+// Initialize Neon Background Architectural Elements
+// Layer 2: Distant Architecture (large, dark, slow)
+for (let i = 0; i < 6; i++) {
     bgObjects.push({
+        layer: 2,
         x: Math.random(),
         y: Math.random(),
-        z: Math.random(),
-        type: Math.floor(Math.random() * 3), // 0: hex, 1: tri, 2: line
-        speed: 0.1 + Math.random() * 0.4,
-        size: 20 + Math.random() * 80
+        width: 100 + Math.random() * 200,
+        height: 300 + Math.random() * 500,
+        speed: 0.1 + Math.random() * 0.1, // very slow parallax
+        type: Math.random() > 0.5 ? 'pillar' : 'frame'
     });
 }
+// Layer 3: Midground Detail (brighter, faster, glowing)
+for (let i = 0; i < 15; i++) {
+    bgObjects.push({
+        layer: 3,
+        x: Math.random(),
+        y: Math.random(),
+        width: 30 + Math.random() * 80,
+        height: 100 + Math.random() * 200,
+        speed: 0.2 + Math.random() * 0.2, // medium parallax
+        type: Math.random() > 0.3 ? 'frame' : 'lightstrip'
+    });
+}
+// Atmospheric FX (Layer 4)
+window.ambientParticles = [];
+for (let i = 0; i < 30; i++) {
+    ambientParticles.push({
+        x: Math.random(),
+        y: Math.random(),
+        speed: 0.05 + Math.random() * 0.1,
+        size: 1 + Math.random() * 3,
+        color: Math.random() > 0.5 ? '#00ffff' : '#ff88ff'
+    });
+}
+
 
 // ════════════════════════════════════════════════════════════════
 //  RESIZE
@@ -121,7 +147,7 @@ function switchLane() {
 
     // Impact dash burst
     for(let i=0; i<15; i++) {
-        particles.push({
+        particles.push({ size: 2 + Math.random()*3,
             x: player.visualX,
             y: player.visualY,
             vx: (Math.random() - 0.5) * 300,
@@ -367,7 +393,7 @@ function triggerPerfect() {
 // ════════════════════════════════════════════════════════════════
 function spawnParticles(x, y, color) {
     for (let i = 0; i < 60; i++) {
-        particles.push({
+        particles.push({ size: 2 + Math.random()*3,
             x, y,
             vx: (Math.random() - 0.5) * 1500,
             vy: (Math.random() - 0.5) * 1500,
@@ -498,7 +524,7 @@ function loop(timestamp) {
     // Heavy player comet trail
     if (isPlaying) {
         for (let k=0; k<2; k++) {
-            particles.push({
+            particles.push({ size: 2 + Math.random()*3,
                 x: player.visualX + (Math.random() - 0.5) * (PLAYER_RADIUS * 1.5),
                 y: player.visualY + PLAYER_RADIUS,
                 vx: (Math.random() - 0.5) * 60,
@@ -511,7 +537,7 @@ function loop(timestamp) {
 
     // Ambient environment particles (dust, sparks, light motes)
     if (isPlaying && Math.random() < 0.8) {
-        particles.push({
+        particles.push({ size: 2 + Math.random()*3,
             x: Math.random() * canvas.width,
             y: canvas.height + 20, // start slightly offscreen bottom
             vx: (Math.random() - 0.5) * 20,
@@ -525,7 +551,7 @@ function loop(timestamp) {
     // Wall electric sparks
     if (isPlaying && Math.random() < 0.2) {
         const wallX = Math.random() > 0.5 ? WALL_WIDTH : canvas.width - WALL_WIDTH;
-        particles.push({
+        particles.push({ size: 2 + Math.random()*3,
             x: wallX,
             y: Math.random() * canvas.height,
             vx: (wallX === WALL_WIDTH ? 1 : -1) * (Math.random() * 100),
