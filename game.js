@@ -2,6 +2,9 @@ const canvas = document.getElementById('game-canvas');
 const ctx = canvas.getContext('2d');
 const container = document.getElementById('game-container');
 
+const spikeImg = new Image();
+spikeImg.src = 'spike.png';
+
 // UI Elements
 const scoreDisplay = document.getElementById('score-display');
 const comboDisplay = document.getElementById('combo-display');
@@ -664,51 +667,38 @@ function draw() {
 
     // ── Draw Multi-layered Crystal Obstacles ────────
     obstacles.forEach(ob => {
-        const [x0, y0, x1, y1, x2, y2] = spikeVerts(ob);
+        if (ob.passed) {
+            // Draw a deactivated dark triangle for passed spikes
+            const [x0, y0, x1, y1, x2, y2] = spikeVerts(ob);
+            ctx.fillStyle = '#111';
+            ctx.beginPath();
+            ctx.moveTo(x0, y0);
+            ctx.lineTo(x2, y2);
+            ctx.lineTo(x1, y1);
+            ctx.closePath();
+            ctx.fill();
+            return;
+        }
 
-        // Dark reflective crystal base
-        ctx.fillStyle = '#0a0011';
-        ctx.beginPath();
-        ctx.moveTo(x0, y0);
-        ctx.lineTo(x2, y2);
-        ctx.lineTo(x1, y1);
-        ctx.closePath();
-        ctx.fill();
-
-        // Neon pink geometric outline
-        ctx.shadowBlur = 15;
-        ctx.shadowColor = '#ff0055';
-        ctx.strokeStyle = '#ff0055';
-        ctx.lineWidth = 3;
-        ctx.stroke();
-
-        // Inner glowing magenta layer
-        const cx = (x0 + x1 + x2) / 3;
-        const cy = (y0 + y1 + y2) / 3;
-        ctx.fillStyle = '#ff00ff';
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = '#ff00ff';
-        ctx.beginPath();
-        const midSize = 0.6;
-        ctx.moveTo(cx + (x0 - cx) * midSize, cy + (y0 - cy) * midSize);
-        ctx.lineTo(cx + (x2 - cx) * midSize, cy + (y2 - cy) * midSize);
-        ctx.lineTo(cx + (x1 - cx) * midSize, cy + (y1 - cy) * midSize);
-        ctx.closePath();
-        ctx.fill();
-
-        // White-hot energy core
-        ctx.fillStyle = '#ffffff';
-        ctx.shadowBlur = 20;
-        ctx.shadowColor = '#ffffff';
-        ctx.beginPath();
-        const coreSize = 0.2;
-        ctx.moveTo(cx + (x0 - cx) * coreSize, cy + (y0 - cy) * coreSize);
-        ctx.lineTo(cx + (x2 - cx) * coreSize, cy + (y2 - cy) * coreSize);
-        ctx.lineTo(cx + (x1 - cx) * coreSize, cy + (y1 - cy) * coreSize);
-        ctx.closePath();
-        ctx.fill();
-        
-        ctx.shadowBlur = 0;
+        // Active spike using the uploaded image
+        // spikeImg naturally points LEFT, with its flat base on the RIGHT.
+        ctx.save();
+        if (ob.lane === 0) {
+            // Left wall: spike needs to point RIGHT.
+            // We translate to the wall, then flip horizontally.
+            ctx.translate(WALL_WIDTH, ob.y);
+            ctx.scale(-1, 1);
+            // After scale(-1,1), drawing at negative X will push it into the +X physical space (towards center)
+            // The image's right edge (base) will sit at X=0 (the wall).
+            // The image's left edge (tip) will sit at X=-ob.depth (physical +ob.depth).
+            ctx.drawImage(spikeImg, -ob.depth, 0, ob.depth, ob.height);
+        } else {
+            // Right wall: spike needs to point LEFT.
+            // This perfectly matches the native image orientation.
+            ctx.translate(canvas.width - WALL_WIDTH - ob.depth, ob.y);
+            ctx.drawImage(spikeImg, 0, 0, ob.depth, ob.height);
+        }
+        ctx.restore();
     });
 
     // ── Draw Particles ────────────────────────
