@@ -3,8 +3,8 @@ const ctx = canvas.getContext('2d');
 const container = document.getElementById('game-container');
 
 const spikeVariants = [
-    { src: 'spike_small.png', width: 62, height: 96, scale: 0.9 },
-    { src: 'spike_large.png', width: 85, height: 130, scale: 0.8 }
+    { src: 'spike_small.png', width: 61, height: 86, scale: 1.0 },
+    { src: 'spike_large.png', width: 103, height: 124, scale: 0.9 }
 ].map(v => {
     const img = new Image();
     img.src = v.src;
