@@ -521,21 +521,7 @@ function loop(timestamp) {
     spawnTimer -= dt;
     if (spawnTimer <= 0) spawnObstacle();
 
-    // Heavy player comet trail
-    if (isPlaying) {
-        for (let k=0; k<2; k++) {
-            particles.push({ size: 2 + Math.random()*3,
-                x: player.visualX + (Math.random() - 0.5) * (PLAYER_RADIUS * 1.5),
-                y: player.visualY + PLAYER_RADIUS,
-                vx: (Math.random() - 0.5) * 60,
-                vy: currentSpeed * 0.5 + Math.random() * 150, 
-                color: Math.random() > 0.5 ? '#00ffff' : '#ff00ff',
-                life: 0.8 + Math.random() * 0.6
-            });
-        }
-    }
-
-    // Ambient environment particles (dust, sparks, light motes)
+        // Ambient environment particles (dust, sparks, light motes)
     if (isPlaying && Math.random() < 0.8) {
         particles.push({ size: 2 + Math.random()*3,
             x: Math.random() * canvas.width,
@@ -638,8 +624,7 @@ function draw() {
         ctx.beginPath();
         if (bg.layer === 2) {
             // Distant Architecture
-            ctx.shadowBlur = 10;
-            ctx.shadowColor = '#440088';
+            
             ctx.strokeStyle = 'rgba(100, 0, 150, 0.3)';
             ctx.fillStyle = 'rgba(20, 0, 40, 0.4)';
             ctx.lineWidth = 4;
@@ -654,8 +639,7 @@ function draw() {
             }
         } else if (bg.layer === 3) {
             // Midground Detail
-            ctx.shadowBlur = 15;
-            ctx.shadowColor = '#ff00ff';
+            
             ctx.strokeStyle = 'rgba(255, 0, 255, 0.4)';
             ctx.lineWidth = 2;
             
@@ -671,15 +655,14 @@ function draw() {
                 ctx.stroke();
             }
         }
-        ctx.shadowBlur = 0;
+        
     });
 
     // ── Layer 4: Atmospheric FX (Drifting Particles) ──
     ambientParticles.forEach(p => {
         let py = p.y * h;
         let px = p.x * w;
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = p.color;
+        
         ctx.fillStyle = p.color;
         ctx.globalAlpha = 0.6;
         ctx.beginPath();
@@ -687,7 +670,7 @@ function draw() {
         ctx.fill();
     });
     ctx.globalAlpha = 1.0;
-    ctx.shadowBlur = 0;
+    
 
     // ── Draw Energy Tower Walls ───────────────────────
     const wallColor = '#120024'; // dark purple solid body
@@ -708,8 +691,6 @@ function draw() {
     }
 
     // Glowing inner edge trim (Hot Pink / Magenta)
-    ctx.shadowBlur = 25;
-    ctx.shadowColor = '#ff00aa';
     ctx.strokeStyle = '#ff00aa';
     ctx.lineWidth = 4;
 
@@ -724,8 +705,7 @@ function draw() {
     ctx.stroke();
     
     // Add white hot edge highlight
-    ctx.shadowBlur = 5;
-    ctx.shadowColor = '#ffffff';
+
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
     ctx.lineWidth = 1;
     ctx.beginPath();
@@ -736,7 +716,7 @@ function draw() {
     ctx.moveTo(w - WALL_WIDTH, 0);
     ctx.lineTo(w - WALL_WIDTH, h);
     ctx.stroke();
-    ctx.shadowBlur = 0;
+    
 
     // ── Draw Multi-layered Crystal Obstacles ────────
     obstacles.forEach(ob => {
@@ -746,9 +726,7 @@ function draw() {
         
         ctx.save();
         
-        // Add strong bloom to spikes
-        ctx.shadowBlur = 20;
-        ctx.shadowColor = '#ff00ff';
+        // Spike bloom removed for performance
         
         if (ob.lane === 0) {
             // Left wall
@@ -765,22 +743,39 @@ function draw() {
         ctx.globalAlpha = 1;
     });
 
-    // ── Draw Player Energy Core ───────────────────────
-    ctx.shadowBlur = 25;
-    ctx.shadowColor = '#00ffff'; // Electric cyan glow
-    ctx.fillStyle = '#ffffff'; // White hot center
-    
-    ctx.beginPath();
-    // Make the player look like a faceted crystal core (diamond shape)
-    ctx.moveTo(player.visualX, player.y - PLAYER_RADIUS * 1.5); // Top
-    ctx.lineTo(player.visualX + PLAYER_RADIUS * 1.2, player.y); // Right
-    ctx.lineTo(player.visualX, player.y + PLAYER_RADIUS * 1.5); // Bottom
-    ctx.lineTo(player.visualX - PLAYER_RADIUS * 1.2, player.y); // Left
-    ctx.closePath();
-    ctx.fill();
+    // ── Draw Player ───────────────────────────
+    if (isPlaying || true) {
+        const px = player.visualX;
+        const py = player.visualY || player.y;
 
-    // Inner core
-    ctx.shadowBlur = 0;
+        // Glow
+        ctx.shadowBlur = 5;
+        ctx.shadowColor = '#00ffff';
+        ctx.fillStyle = '#00ffff';
+
+        ctx.beginPath();
+        ctx.arc(px, py, PLAYER_RADIUS, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Inner bright core
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(px, py, PLAYER_RADIUS * 0.45, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.shadowBlur = 0; // reset
+
+        // Trail
+        ctx.globalAlpha = 0.25;
+        ctx.fillStyle = '#00ffff';
+        ctx.beginPath();
+        ctx.arc(px, py + 8, PLAYER_RADIUS * 0.7, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(px, py + 16, PLAYER_RADIUS * 0.4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+    }
     ctx.fillStyle = '#ccffff';
     ctx.beginPath();
     ctx.moveTo(player.visualX, player.y - PLAYER_RADIUS * 0.8);
@@ -790,20 +785,7 @@ function draw() {
     ctx.closePath();
     ctx.fill();
 
-    // ── Particles ─────────────────────────────────────
-    particles.forEach(p => {
-        ctx.globalAlpha = p.life;
-        ctx.fillStyle = p.color;
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = p.color;
-        
-        ctx.beginPath();
-        // Tiny glowing squares for cyber feel
-        ctx.rect(p.x - p.size, p.y - p.size, p.size*2, p.size*2);
-        ctx.fill();
-    });
-    ctx.globalAlpha = 1;
-    ctx.shadowBlur = 0;
+    
     
     // ── Bottom Fog / Energy Mist ───────────────────────
     const fogGrad = ctx.createLinearGradient(0, h - 150, 0, h);
@@ -834,17 +816,17 @@ function drawHUD(w, h) {
 
     // Outer glow layer
     ctx.font = 'bold 72px "Courier New", monospace';
-    ctx.shadowBlur = 30;
+    ctx.shadowBlur = 10;
     ctx.shadowColor = 'rgba(0,255,255,0.5)';
     ctx.fillStyle = 'rgba(0,255,255,0.12)';
     ctx.fillText(scoreStr, cx, 60);
 
     // Main score text
-    ctx.shadowBlur = 15;
+    ctx.shadowBlur = 5;
     ctx.shadowColor = '#00ffff';
     ctx.fillStyle = '#ffffff';
     ctx.fillText(scoreStr, cx, 60);
-    ctx.shadowBlur = 0;
+    
 
     // ── Sci-fi bracket frame around score ──
     const tw = ctx.measureText(scoreStr).width;
@@ -897,20 +879,20 @@ function drawHUD(w, h) {
     ctx.lineTo(frameR - corner - 4, frameB);
     ctx.stroke();
 
-    ctx.shadowBlur = 0;
+    
 
     // ── Multiplier badge ──────────────
     if (mult > 1) {
         const multStr = `x${mult}`;
         ctx.font = 'bold 28px "Courier New", monospace';
-        ctx.shadowBlur = 10;
+        
         ctx.shadowColor = '#00ffff';
 
         // Pulse alpha with time
         const pulse = 0.7 + 0.3 * Math.sin(performance.now() * 0.008);
         ctx.fillStyle = `rgba(0,255,255,${pulse})`;
         ctx.fillText(multStr, cx, 120);
-        ctx.shadowBlur = 0;
+        
     }
 
     // ── "COMBO" label left wall ───────
