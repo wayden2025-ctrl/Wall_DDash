@@ -61,7 +61,6 @@ const player = {
 // ─── Obstacles & Particles ─────────────────────────────────────
 let obstacles = [];
 let particles = [];
-let bgObjects = [];
 let spawnTimer = 0;
 const SPAWN_INTERVAL = 0.45;  // spawn every 0.45s – dense but playable
 const MIN_SPIKE_GAP = 50;     // minimum vertical px between any two spikes on the same wall
@@ -76,32 +75,36 @@ let scrollOffset = 0;
 let screenShakeTime = 0;
 let screenShakeIntensity = 0;
 
-// Initialize Neon Background Architectural Elements
-// Layer 2: Distant Architecture (large, dark, slow)
-for (let i = 0; i < 6; i++) {
-    bgObjects.push({
-        layer: 2,
-        x: Math.random(),
-        y: Math.random(),
-        width: 100 + Math.random() * 200,
-        height: 300 + Math.random() * 500,
-        speed: 0.1 + Math.random() * 0.1, // very slow parallax
-        type: Math.random() > 0.5 ? 'pillar' : 'frame'
-    });
+// ── Neon Hacker Matrix Rain Initialization ──
+const matrixChars = "0179%#@&?!/\[]{}<>XKRVNZ";
+const matrixColors = ['#00ffff', '#ff00ff', '#8800ff', '#0088ff', '#ff00aa'];
+let matrixStreams = [];
+const NUM_STREAMS = 25; // Sparse enough to not lag, dense enough to look cool
+
+for (let i = 0; i < NUM_STREAMS; i++) {
+    matrixStreams.push(createMatrixStream(true));
 }
-// Layer 3: Midground Detail (brighter, faster, glowing)
-for (let i = 0; i < 15; i++) {
-    bgObjects.push({
-        layer: 3,
-        x: Math.random(),
-        y: Math.random(),
-        width: 30 + Math.random() * 80,
-        height: 100 + Math.random() * 200,
-        speed: 0.2 + Math.random() * 0.2, // medium parallax
-        type: Math.random() > 0.3 ? 'frame' : 'lightstrip'
-    });
+
+function createMatrixStream(randomY = false) {
+    const length = 5 + Math.floor(Math.random() * 15);
+    const symbols = [];
+    for (let j = 0; j < length; j++) {
+        symbols.push(matrixChars[Math.floor(Math.random() * matrixChars.length)]);
+    }
+    
+    return {
+        x: Math.random(), // 0 to 1
+        y: randomY ? Math.random() : -0.5, // 0 to 1 on screen, or off-screen top
+        speed: 0.1 + Math.random() * 0.4,
+        length: length,
+        symbols: symbols,
+        colorBase: matrixColors[Math.floor(Math.random() * matrixColors.length)],
+        layer: Math.random() > 0.6 ? 1 : (Math.random() > 0.4 ? 2 : 3), // 1=Front, 2=Mid, 3=Back
+        fontSize: 0, // Computed in draw
+        glitchTimer: Math.random()
+    };
 }
-// Atmospheric FX (Layer 4)
+
 window.ambientParticles = [];
 for (let i = 0; i < 30; i++) {
     ambientParticles.push({
@@ -547,24 +550,24 @@ function loop(timestamp) {
         });
     }
 
-    // Update parallax bg objects (Smooth infinite scrolling)
-    bgObjects.forEach(bg => {
-        bg.y += currentSpeed * dt * bg.speed * 0.001;
-        // If it goes fully below the screen
-        if (bg.y * canvas.height > canvas.height + bg.height + 50) {
-            bg.y = -(bg.height + 50) / canvas.height; // Teleport just above the screen
-            bg.x = Math.random(); // Randomize horizontal position
-            
-            // Generate a fresh shape for variety!
-            if (bg.layer === 2) {
-                bg.width = 100 + Math.random() * 200;
-                bg.height = 300 + Math.random() * 500;
-                bg.type = Math.random() > 0.5 ? 'pillar' : 'frame';
-            } else {
-                bg.width = 30 + Math.random() * 80;
-                bg.height = 100 + Math.random() * 200;
-                bg.type = Math.random() > 0.3 ? 'frame' : 'lightstrip';
-            }
+    // Update Matrix Streams
+    matrixStreams.forEach(stream => {
+        stream.y += currentSpeed * dt * stream.speed * 0.001;
+        
+        // Glitch effect
+        stream.glitchTimer -= dt;
+        if (stream.glitchTimer <= 0) {
+            stream.glitchTimer = 0.1 + Math.random() * 0.5;
+            // Swap a random character
+            const idx = Math.floor(Math.random() * stream.length);
+            stream.symbols[idx] = matrixChars[Math.floor(Math.random() * matrixChars.length)];
+        }
+
+        // If head is completely off screen bottom (approximate length via fontSize assumption)
+        const approxStreamHeight = (stream.length * 20) / canvas.height; 
+        if (stream.y - approxStreamHeight > 1.0) {
+            // Respawn
+            Object.assign(stream, createMatrixStream(false));
         }
     });
 
@@ -627,48 +630,42 @@ function draw() {
     ctx.fillStyle = bgGrad;
     ctx.fillRect(0, 0, w, h);
 
-    // ── Background Architecture Layers ──
-    bgObjects.forEach(bg => {
-        let py = bg.y * h;
-        let px = bg.x * w;
-
-        ctx.beginPath();
-        if (bg.layer === 2) {
-            // Distant Architecture
-            
-            ctx.strokeStyle = 'rgba(100, 0, 150, 0.3)';
-            ctx.fillStyle = 'rgba(20, 0, 40, 0.4)';
-            ctx.lineWidth = 4;
-            
-            if (bg.type === 'pillar') {
-                ctx.fillRect(px, py, bg.width, bg.height);
-                ctx.strokeRect(px, py, bg.width, bg.height);
-            } else if (bg.type === 'frame') {
-                ctx.strokeRect(px, py, bg.width, bg.height);
-                // Inner square
-                ctx.strokeRect(px + 15, py + 15, bg.width - 30, bg.height - 30);
-            }
-        } else if (bg.layer === 3) {
-            // Midground Detail
-            
-            ctx.strokeStyle = 'rgba(255, 0, 255, 0.4)';
-            ctx.lineWidth = 2;
-            
-            if (bg.type === 'frame') {
-                ctx.strokeRect(px, py, bg.width, bg.height);
-                ctx.fillStyle = 'rgba(255, 0, 255, 0.05)';
-                ctx.fillRect(px, py, bg.width, bg.height);
-            } else if (bg.type === 'lightstrip') {
-                ctx.shadowColor = '#00ffff';
-                ctx.strokeStyle = 'rgba(0, 255, 255, 0.5)';
-                ctx.moveTo(px, py);
-                ctx.lineTo(px, py + bg.height);
-                ctx.stroke();
-            }
-        }
+    // ── Matrix Code Rain ──
+    ctx.font = 'bold 16px "Courier New", monospace';
+    ctx.textAlign = 'center';
+    
+    matrixStreams.forEach(stream => {
+        let px = stream.x * w;
+        let py = stream.y * h;
         
+        let sizeMultiplier = 1;
+        let baseAlpha = 1;
+        
+        if (stream.layer === 1) { sizeMultiplier = 1.2; baseAlpha = 1.0; }
+        else if (stream.layer === 2) { sizeMultiplier = 0.9; baseAlpha = 0.6; }
+        else { sizeMultiplier = 0.6; baseAlpha = 0.3; }
+        
+        ctx.font = `bold ${Math.floor(16 * sizeMultiplier)}px "Courier New", monospace`;
+        
+        for (let i = 0; i < stream.length; i++) {
+            let charY = py - (i * 16 * sizeMultiplier);
+            if (charY < -20 || charY > h + 20) continue; // Culling
+            
+            ctx.globalAlpha = baseAlpha * (1 - (i / stream.length));
+            
+            if (i === 0) {
+                // Head character
+                ctx.fillStyle = '#ffffff'; 
+            } else {
+                // Body character
+                ctx.fillStyle = stream.colorBase;
+            }
+            
+            ctx.fillText(stream.symbols[i], px, charY);
+        }
     });
-
+    ctx.globalAlpha = 1.0;
+    
     // ── Layer 4: Atmospheric FX (Drifting Particles) ──
     ambientParticles.forEach(p => {
         let py = p.y * h;
