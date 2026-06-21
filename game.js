@@ -187,40 +187,18 @@ function playPerfect() {
 //    • Enforce a minimum vertical gap on the SAME wall so the
 //      player always has time to react after switching.
 // ════════════════════════════════════════════════════════════════
-function canSpawnOnLane(lane, yPos) {
-    for (const ob of obstacles) {
-        // Enforce a strict minimum physical gap between ANY spike and the new spike on the same wall
-        // so the player always has time to react.
-        if (ob.lane === lane && Math.abs(ob.y - yPos) < 180) return false;
-        
-        // On opposite walls, prevent them from overlapping directly which would create an impossible wall
-        if (ob.lane !== lane && Math.abs(ob.y - yPos) < 120) return false;
-    }
-    return true;
-}
+let nextLane = Math.random() < 0.5 ? 0 : 1;
+let sameSideCount = 0;
 
 function spawnObstacle() {
     const yPos = -SPIKE_BASE;
-    // Pure randomness for lane selection
-    let lane = Math.random() < 0.5 ? 0 : 1;
-
-    // If the chosen lane is blocked (e.g. by a spike too close), try the other lane
-    if (!canSpawnOnLane(lane, yPos)) {
-        lane = lane === 0 ? 1 : 0;
-        // If BOTH lanes are blocked, wait a tiny bit and try again
-        if (!canSpawnOnLane(lane, yPos)) {
-            spawnTimer = 0.05; // retry very fast
-            return;
-        }
-    }
-
-    lastSpawnLane = lane;
+    let lane = nextLane;
 
     // Distribute randomly with small and big spikes together
-    const isBig = Math.random() < 0.3; // 30% chance for a big, scary spike
+    const isBig = Math.random() < 0.4; // 40% chance for a big, scary spike
     
-    let spikeHeight = isBig ? 60 + Math.random() * 40 : 25 + Math.random() * 20;
-    let spikeDepth = isBig ? 45 + Math.random() * 25 : 20 + Math.random() * 15;
+    let spikeHeight = isBig ? 80 + Math.random() * 60 : 30 + Math.random() * 30;
+    let spikeDepth = isBig ? 50 + Math.random() * 30 : 20 + Math.random() * 20;
 
     obstacles.push({
         lane,
@@ -230,17 +208,38 @@ function spawnObstacle() {
         passed: false
     });
 
-    // Spawn interval calculation based on physical distance, which shrinks over time
-    let baseDistance = 450; // starting pixels between spikes
-    
-    // Shrink distance as time goes on to increase density, down to a minimum of 200 pixels gap
-    // Time survived grows, distance shrinks. After 100 seconds, it drops by 250px.
-    let shrink = Math.min(250, timeSurvived * 2.5); 
-    
-    // Add random variance so the rhythm is unpredictable (0 to 150 extra pixels)
-    let variance = Math.random() * 150;
-    
-    let physicalDistance = baseDistance - shrink + variance;
+    // Determine the lane for the NEXT spike
+    let switchLanes = false;
+    // Force switch if we've clustered too many spikes on the same side
+    if (sameSideCount >= (2 + Math.random() * 5)) {
+        switchLanes = true;
+    } else {
+        // Natural 35% chance to switch sides
+        switchLanes = Math.random() < 0.35; 
+    }
+
+    let physicalDistance;
+
+    if (switchLanes) {
+        nextLane = lane === 0 ? 1 : 0;
+        sameSideCount = 0;
+        
+        // When switching lanes, we MUST guarantee enough vertical space for the player to diagonally dash across
+        // The required space is: height of the current spike + distance player travels forward during dash + small buffer
+        // Player dash takes roughly 0.18 seconds to cross the screen safely at these speeds
+        let dashTimeDistance = currentSpeed * 0.18; 
+        let safeBuffer = 80; 
+        
+        // Total physical distance before the NEXT spike appears on the other side
+        physicalDistance = spikeHeight + dashTimeDistance + safeBuffer + (Math.random() * 150);
+    } else {
+        nextLane = lane;
+        sameSideCount++;
+        
+        // When staying on the SAME lane, we can cluster them extremely densely!
+        // Gap between 10px and 90px (if 10px, they basically touch and form a giant complex wall of spikes)
+        physicalDistance = 10 + Math.random() * 80; 
+    }
     
     // Timer is distance divided by speed
     spawnTimer = physicalDistance / currentSpeed;
