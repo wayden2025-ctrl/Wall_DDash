@@ -541,7 +541,7 @@ function loop(timestamp) {
     currentSpeed = baseSpeed + (timeSurvived * 15);
 
     // Smooth player position
-    const lerp = Math.min(1, 35 * dt); // faster horizontal snap
+    const lerp = Math.min(1, 50 * dt); // extremely fast snap
     player.visualX += (player.targetX - player.visualX) * lerp;
     
     // Calculate distance to target to create a subtle vertical "arc" (slant) during dash
