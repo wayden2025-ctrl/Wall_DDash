@@ -2,8 +2,20 @@ const canvas = document.getElementById('game-canvas');
 const ctx = canvas.getContext('2d');
 const container = document.getElementById('game-container');
 
-const spikeImg = new Image();
-spikeImg.src = 'spike.png';
+const spikeVariants = [
+    { src: 'spike_small.png', width: 53, height: 84, scale: 0.9 },
+    { src: 'spike_med.png', width: 61, height: 125, scale: 0.8 },
+    { src: 'spike_large.png', width: 98, height: 141, scale: 0.8 },
+    { src: 'spike_triple.png', width: 71, height: 152, scale: 0.8 }
+].map(v => {
+    const img = new Image();
+    img.src = v.src;
+    return {
+        img,
+        width: v.width * v.scale,
+        height: v.height * v.scale
+    };
+});
 
 // UI Elements
 const scoreDisplay = document.getElementById('score-display');
@@ -194,20 +206,20 @@ let nextLane = Math.random() < 0.5 ? 0 : 1;
 let sameSideCount = 0;
 
 function spawnObstacle() {
-    const yPos = -SPIKE_BASE;
+    const yPos = -150; // spawn fully offscreen
     let lane = nextLane;
 
-    // Distribute randomly with small and big spikes together
-    const isBig = Math.random() < 0.4; // 40% chance for a big, scary spike
-    
-    let spikeHeight = isBig ? 80 + Math.random() * 60 : 30 + Math.random() * 30;
-    let spikeDepth = isBig ? 50 + Math.random() * 30 : 20 + Math.random() * 20;
+    // Pick a random variant
+    const variant = spikeVariants[Math.floor(Math.random() * spikeVariants.length)];
+    const spikeHeight = variant.height;
+    const spikeDepth = variant.width;
 
     obstacles.push({
         lane,
         y: yPos,
         height: spikeHeight,
         depth: spikeDepth,
+        variant: variant,
         passed: false
     });
 
@@ -239,9 +251,8 @@ function spawnObstacle() {
         nextLane = lane;
         sameSideCount++;
         
-        // When staying on the SAME lane, we can cluster them extremely densely!
-        // Gap between 10px and 90px (if 10px, they basically touch and form a giant complex wall of spikes)
-        physicalDistance = 10 + Math.random() * 80; 
+        // NO OVERLAPPING: distance to the next spike MUST be at least the height of this spike + a small gap.
+        physicalDistance = spikeHeight + 10 + Math.random() * 50; 
     }
     
     // Timer is distance divided by speed
@@ -681,7 +692,7 @@ function draw() {
         }
 
         // Active spike using the uploaded image
-        // spikeImg naturally points LEFT, with its flat base on the RIGHT.
+        // ob.variant.img naturally points LEFT, with its flat base on the RIGHT.
         ctx.save();
         if (ob.lane === 0) {
             // Left wall: spike needs to point RIGHT.
@@ -691,12 +702,12 @@ function draw() {
             // After scale(-1,1), drawing at negative X will push it into the +X physical space (towards center)
             // The image's right edge (base) will sit at X=0 (the wall).
             // The image's left edge (tip) will sit at X=-ob.depth (physical +ob.depth).
-            ctx.drawImage(spikeImg, -ob.depth, 0, ob.depth, ob.height);
+            ctx.drawImage(ob.variant.img, -ob.depth, 0, ob.depth, ob.height);
         } else {
             // Right wall: spike needs to point LEFT.
             // This perfectly matches the native image orientation.
             ctx.translate(canvas.width - WALL_WIDTH - ob.depth, ob.y);
-            ctx.drawImage(spikeImg, 0, 0, ob.depth, ob.height);
+            ctx.drawImage(ob.variant.img, 0, 0, ob.depth, ob.height);
         }
         ctx.restore();
     });
