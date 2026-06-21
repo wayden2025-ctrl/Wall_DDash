@@ -547,12 +547,24 @@ function loop(timestamp) {
         });
     }
 
-    // Update parallax bg objects
+    // Update parallax bg objects (Smooth infinite scrolling)
     bgObjects.forEach(bg => {
         bg.y += currentSpeed * dt * bg.speed * 0.001;
-        if (bg.y > 1.2) {
-            bg.y = -0.2;
-            bg.x = Math.random();
+        // If it goes fully below the screen
+        if (bg.y * canvas.height > canvas.height + bg.height + 50) {
+            bg.y = -(bg.height + 50) / canvas.height; // Teleport just above the screen
+            bg.x = Math.random(); // Randomize horizontal position
+            
+            // Generate a fresh shape for variety!
+            if (bg.layer === 2) {
+                bg.width = 100 + Math.random() * 200;
+                bg.height = 300 + Math.random() * 500;
+                bg.type = Math.random() > 0.5 ? 'pillar' : 'frame';
+            } else {
+                bg.width = 30 + Math.random() * 80;
+                bg.height = 100 + Math.random() * 200;
+                bg.type = Math.random() > 0.3 ? 'frame' : 'lightstrip';
+            }
         }
     });
 
@@ -617,8 +629,7 @@ function draw() {
 
     // ── Background Architecture Layers ──
     bgObjects.forEach(bg => {
-        // Calculate parallax Y using currentSpeed
-        let py = (bg.y * h + (scrollOffset * bg.speed)) % (h + bg.height) - bg.height;
+        let py = bg.y * h;
         let px = bg.x * w;
 
         ctx.beginPath();
