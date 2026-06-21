@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Wall Dash - Play</title>
+    <link rel="stylesheet" href="style.css?v=2">
+    
+    <!-- Vercel Analytics -->
+    <script>
+      window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/insights/script.js"></script>
+</head>
+<body style="width: 100vw; height: 100vh; overflow: hidden; margin: 0; padding: 0; background-color: #050508;">
+    <div id="game-container" style="width: 100%; height: 100%; max-width: 600px; margin: 0 auto; position: relative; overflow: hidden; box-shadow: 0 0 50px rgba(0,0,0,0.8);">
+        <canvas id="game-canvas"></canvas>
+        
+        <div id="ui-layer">
+            <div id="score-display">0</div>
+            <div id="combo-display" class="hidden">x1</div>
+            <div id="perfect-text" class="hidden">PERFECT!</div>
+        </div>
+
+        <div id="game-over-screen" class="hidden">
+            <div class="glass-panel">
+                <h1>GAME OVER</h1>
+                <div class="stats">
+                    <p>Score: <span id="final-score">0</span></p>
+                    <p>Best Combo: <span id="final-combo">0</span></p>
+                </div>
+                <button id="restart-btn">RESTART (Space)</button>
+                <button onclick="window.location.href='index.html'" style="margin-top: 15px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-family: 'Courier New', Courier, monospace; font-size: 14px; font-weight: bold; text-transform: uppercase;">HOME</button>
+            </div>
+        </div>
+        
+        <div id="start-screen" style="display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; height: 100%; text-align: center;">
+            <div class="glass-panel" style="margin: 0 auto; display: flex; flex-direction: column; align-items: center; text-align: center;">
+                <img src="logo.png" alt="Wall Dash" style="max-width: 90%; max-height: 250px; margin: 0 auto 20px auto; display: block; border-radius: 10px; box-shadow: 0 0 20px rgba(0, 150, 255, 0.3);">
+                <p>Tap, Click, or Space to switch lanes.</p>
+                <p>Dodge obstacles.</p>
+                <button id="start-btn">START</button>
+                <button onclick="window.location.href='index.html'" style="margin-top: 15px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-family: 'Courier New', Courier, monospace; font-size: 14px; font-weight: bold; text-transform: uppercase;">HOME</button>
+            </div>
+        </div>
+
+        <div id="win-screen" class="hidden">
+            <div class="glass-panel">
+                <h1 style="color: #ffcc00; text-shadow: 0 0 30px #ffcc00, 0 0 60px #ff8800;">🏆 YOU WON 🏆</h1>
+                <p style="font-size: 22px; color: #fff; margin-bottom: 10px;">1,000,000 POINTS</p>
+                <p style="font-size: 16px; color: #ffcc00;">You are a Wall Dash legend.</p>
+                <div class="stats">
+                    <p>Final Score: <span id="win-score">0</span></p>
+                    <p>Best Combo: <span id="win-combo">0</span></p>
+                    <p>Time Survived: <span id="win-time">0</span>s</p>
+                </div>
+                <button id="win-restart-btn">PLAY AGAIN</button>
+                <button onclick="window.location.href='index.html'" style="margin-top: 15px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-family: 'Courier New', Courier, monospace; font-size: 14px; font-weight: bold; text-transform: uppercase;">HOME</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="game.js"></script>
+</body>
+</html>

@@ -47,102 +47,40 @@
             <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
         </div>
 
-        <div id="game-container" style="flex: 1; width: 100%;">
-        <canvas id="game-canvas"></canvas>
-        
-        <div id="ui-layer">
-            <div id="score-display">0</div>
-            <div id="combo-display" class="hidden">x1</div>
-            <div id="perfect-text" class="hidden">PERFECT!</div>
-        </div>
+        <div id="landing-container" style="flex: 1; width: 100%; display: flex; flex-direction: column; align-items: center; text-align: center; overflow-y: auto; padding: 40px 20px;">
+            <div class="glass-panel" style="margin: 0 auto; max-width: 600px; padding: 40px; display: flex; flex-direction: column; align-items: center; border-radius: 15px; box-shadow: 0 0 30px rgba(0, 255, 255, 0.2);">
+                <img src="logo.png" alt="Wall Dash Logo" style="max-width: 90%; max-height: 250px; margin: 0 auto 30px auto; display: block; border-radius: 10px; box-shadow: 0 0 20px rgba(0, 150, 255, 0.4);">
+                
+                <h1 style="color: #00ffff; font-size: 32px; margin-bottom: 20px; text-shadow: 0 0 10px rgba(0,255,255,0.5);">Welcome to Wall Dash</h1>
+                
+                <p style="color: #ffffff; font-size: 16px; margin-bottom: 30px; line-height: 1.5;">
+                    A fast-paced, neon-infused arcade dodging game designed to test your reflexes and timing.
+                </p>
+                
+                <button onclick="window.location.href='game.html'" style="background: linear-gradient(45deg, #00ffff, #0088ff); color: #000; border: none; padding: 15px 40px; font-size: 24px; font-weight: bold; border-radius: 30px; cursor: pointer; text-transform: uppercase; font-family: 'Courier New', Courier, monospace; box-shadow: 0 0 20px rgba(0,255,255,0.6); transition: transform 0.2s, box-shadow 0.2s;">
+                    PLAY NOW
+                </button>
+            </div>
 
-        <div id="game-over-screen" class="hidden">
-            <div class="glass-panel">
-                <h1>GAME OVER</h1>
-                <div class="stats">
-                    <p>Score: <span id="final-score">0</span></p>
-                    <p>Best Combo: <span id="final-combo">0</span></p>
-                </div>
-                <button id="restart-btn">RESTART (Space)</button>
+            <!-- Publisher Content Section for AdSense Policy Compliance -->
+            <div id="publisher-content" style="max-width: 800px; margin: 40px auto; padding: 20px; font-family: 'Courier New', Courier, monospace; color: #a0a0b0; line-height: 1.6; text-align: left;">
+                <h2 style="color: #00ffff; margin-bottom: 15px; font-size: 24px;">About Wall Dash</h2>
+                <p style="margin-bottom: 20px; font-size: 15px;">
+                    <strong>Wall Dash</strong> is a fast-paced neon arcade game. Survive by dodging crystal spikes as the speed continuously increases.
+                </p>
+
+                <h3 style="color: #ff00ff; margin-bottom: 10px; font-size: 20px;">How to Play</h3>
+                <p style="margin-bottom: 20px; font-size: 15px;">
+                    Tap the screen, Click your mouse, or press Spacebar to switch walls and dodge the incoming obstacles. Timing a dodge at the very last second before impact grants a "PERFECT!" rating, dramatically increasing your score multiplier.
+                </p>
+
+                <h3 style="color: #00ffff; margin-bottom: 10px; font-size: 20px;">Features</h3>
+                <ul style="margin-left: 20px; margin-bottom: 20px; font-size: 15px;">
+                    <li style="margin-bottom: 8px;"><strong>Responsive Controls:</strong> Instant lane switching with zero delay, optimized for both desktop and mobile.</li>
+                    <li style="margin-bottom: 8px;"><strong>Premium Visuals:</strong> Experience glowing neon graphics, particle bursts, and a multi-layered parallax background.</li>
+                    <li style="margin-bottom: 8px;"><strong>Dynamic Difficulty:</strong> The speed and intensity of the game automatically scale up the longer you survive.</li>
+                </ul>
             </div>
         </div>
-        
-        <div id="start-screen" style="display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; height: 100%; text-align: center;">
-            <div class="glass-panel" style="margin: 0 auto; display: flex; flex-direction: column; align-items: center; text-align: center;">
-                <img src="logo.png" alt="Wall Dash" style="max-width: 90%; max-height: 250px; margin: 0 auto 20px auto; display: block; border-radius: 10px; box-shadow: 0 0 20px rgba(0, 150, 255, 0.3);">
-                <p>Tap, Click, or Space to switch lanes.</p>
-                <p>Dodge obstacles.</p>
-
-                <p style="margin-top: 10px; margin-bottom: 20px; color: #00ffcc; font-size: 13px; font-style: italic;">Note: For the most optimal and responsive experience, playing on Desktop is highly recommended.</p>
-                <button id="start-btn">START</button>
-            </div>
-        </div>
-
-        <div id="win-screen" class="hidden">
-            <div class="glass-panel">
-                <h1 style="color: #ffcc00; text-shadow: 0 0 30px #ffcc00, 0 0 60px #ff8800;">🏆 YOU WON 🏆</h1>
-                <p style="font-size: 22px; color: #fff; margin-bottom: 10px;">1,000,000 POINTS</p>
-                <p style="font-size: 16px; color: #ffcc00;">You are a Wall Dash legend.</p>
-                <div class="stats">
-                    <p>Final Score: <span id="win-score">0</span></p>
-                    <p>Best Combo: <span id="win-combo">0</span></p>
-                    <p>Time Survived: <span id="win-time">0</span>s</p>
-                </div>
-                <button id="win-restart-btn">PLAY AGAIN</button>
-            </div>
-        </div>
-        </div>
-        
-        <!-- Right Desktop Ads -->
-        <div class="ad-space-desktop right-ad">
-            <ins class="adsbygoogle"
-                 style="display:block"
-                 data-ad-client="ca-pub-6859171401389344"
-                 data-ad-slot="3417989492"
-                 data-ad-format="auto"
-                 data-full-width-responsive="true"></ins>
-            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-            
-            <ins class="adsbygoogle"
-                 style="display:block"
-                 data-ad-client="ca-pub-6859171401389344"
-                 data-ad-slot="8105429727"
-                 data-ad-format="auto"
-                 data-full-width-responsive="true"></ins>
-            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-        </div>
-    </div>
-
-    <!-- Bottom Mobile Ad Space -->
-    <div class="ad-space-mobile bottom-ad">
-        <ins class="adsbygoogle"
-             style="display:block"
-             data-ad-client="ca-pub-6859171401389344"
-             data-ad-slot="3323876331"
-             data-ad-format="auto"
-             data-full-width-responsive="true"></ins>
-        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-    </div>
-
-    <!-- Publisher Content Section for AdSense Policy Compliance -->
-    <div id="publisher-content" class="publisher-content" style="max-width: 800px; margin: 40px auto; padding: 20px; font-family: 'Courier New', Courier, monospace; color: #a0a0b0; line-height: 1.6; padding-bottom: 60px; transition: opacity 0.5s ease-out;">
-        <h2 style="color: #00ffff; margin-bottom: 10px; font-size: 20px;">About Wall Dash</h2>
-        <p style="margin-bottom: 15px; font-size: 14px;">
-            <strong>Wall Dash</strong> is a fast-paced neon arcade game. Survive by dodging crystal spikes as the speed increases.
-        </p>
-
-        <h3 style="color: #ff00ff; margin-bottom: 10px; font-size: 18px;">How to Play</h3>
-        <p style="margin-bottom: 15px; font-size: 14px;">
-            Tap, Click, or press Spacebar to switch walls and dodge. Timing a dodge at the last second grants a "PERFECT!" score multiplier.
-        </p>
-
-        <h3 style="color: #00ffff; margin-bottom: 10px; font-size: 18px;">Features</h3>
-        <ul style="margin-left: 20px; margin-bottom: 15px; font-size: 14px;">
-            <li><strong>Responsive Controls:</strong> Instant lane switching with zero delay.</li>
-            <li><strong>Dynamic Scaling:</strong> Game speed increases the further you go.</li>
-        </ul>
-    </div>
-
-    <script src="game.js"></script>
 </body>
 </html>
