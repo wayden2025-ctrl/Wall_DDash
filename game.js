@@ -189,67 +189,61 @@ function playPerfect() {
 // ════════════════════════════════════════════════════════════════
 function canSpawnOnLane(lane, yPos) {
     for (const ob of obstacles) {
-        // Same wall? enforce vertical gap (shrinks drastically in hell mode)
-        const currentMinGap = score >= 950000 ? 25 : MIN_SPIKE_GAP;
-        if (ob.lane === lane && Math.abs(ob.y - yPos) < currentMinGap) return false;
-        // Opposite wall at same Y? never
-        if (ob.lane !== lane && Math.abs(ob.y - yPos) < SPIKE_BASE + 4) return false;
+        // Enforce a strict minimum physical gap between ANY spike and the new spike on the same wall
+        // so the player always has time to react.
+        if (ob.lane === lane && Math.abs(ob.y - yPos) < 180) return false;
+        
+        // On opposite walls, prevent them from overlapping directly which would create an impossible wall
+        if (ob.lane !== lane && Math.abs(ob.y - yPos) < 120) return false;
     }
     return true;
 }
 
 function spawnObstacle() {
     const yPos = -SPIKE_BASE;
-    // Alternate walls or add randomness based on phase
-    let lane;
-    if (lastSpawnLane === -1) {
-        lane = Math.random() < 0.5 ? 0 : 1; 
-    } else if (score >= 50000 && score < 950000) {
-        // Mid-to-late: "more randomness", purely random 50/50 to spread everywhere
-        lane = Math.random() < 0.5 ? 0 : 1;
-    } else {
-        // Early game and Hell mode: perfect alternate
-        lane = lastSpawnLane === 0 ? 1 : 0;
-    }
+    // Pure randomness for lane selection
+    let lane = Math.random() < 0.5 ? 0 : 1;
 
+    // If the chosen lane is blocked (e.g. by a spike too close), try the other lane
     if (!canSpawnOnLane(lane, yPos)) {
         lane = lane === 0 ? 1 : 0;
+        // If BOTH lanes are blocked, wait a tiny bit and try again
         if (!canSpawnOnLane(lane, yPos)) {
-            spawnTimer = 0.08; // retry fast
+            spawnTimer = 0.05; // retry very fast
             return;
         }
     }
 
     lastSpawnLane = lane;
 
+    // Distribute randomly with small and big spikes together
+    const isBig = Math.random() < 0.3; // 30% chance for a big, scary spike
+    
+    let spikeHeight = isBig ? 60 + Math.random() * 40 : 25 + Math.random() * 20;
+    let spikeDepth = isBig ? 45 + Math.random() * 25 : 20 + Math.random() * 15;
+
     obstacles.push({
         lane,
         y: yPos,
-        height: SPIKE_BASE + Math.random() * 60,
-        depth: SPIKE_DEPTH + 10 + Math.random() * 40,
+        height: spikeHeight,
+        depth: spikeDepth,
         passed: false
     });
 
-    // Spawn interval based on physical distance and current speed
-    if (score >= 950000) {
-        // HELL MODE: nearly impossible, relentless zig-zag
-        // Spawns a spike every 70-100 pixels physically. Insanely tight but mathematically possible.
-        spawnTimer = (70 + Math.random() * 30) / currentSpeed;
-    } else if (score >= 50000) {
-        // MID-TO-LATE GAME: "Harder and harder the farther you go"
-        const midDifficulty = Math.min(1, (score - 50000) / 900000); // 0.0 to 1.0 from 50k to 950k
-        
-        // Gap drops from 250px down to 100px as you approach 950k
-        const minDistance = 250 - (150 * midDifficulty); 
-        const randomRange = 150 - (100 * midDifficulty); // Range shrinks so spikes get tighter and tighter
-        spawnTimer = (minDistance + Math.random() * randomRange) / currentSpeed;
-    } else {
-        // EARLY GAME (0 to 50k): Gentle ramp up
-        const difficulty = Math.min(1, score / 50000); // 0.0 to 1.0
-        const minDistance = 500 - (250 * difficulty); // 500 -> 250
-        const randomRange = 200 - (100 * difficulty); // 200 -> 100
-        spawnTimer = (minDistance + Math.random() * randomRange) / currentSpeed;
-    }
+    // Spawn interval calculation based on physical distance, which shrinks over time
+    let baseDistance = 450; // starting pixels between spikes
+    
+    // Shrink distance as time goes on to increase density, down to a minimum of 200 pixels gap
+    // Time survived grows, distance shrinks. After 100 seconds, it drops by 250px.
+    let shrink = Math.min(250, timeSurvived * 2.5); 
+    
+    // Add random variance so the rhythm is unpredictable (0 to 150 extra pixels)
+    let variance = Math.random() * 150;
+    
+    let physicalDistance = baseDistance - shrink + variance;
+    
+    // Timer is distance divided by speed
+    spawnTimer = physicalDistance / currentSpeed;
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -469,22 +463,10 @@ function loop(timestamp) {
         return;
     }
 
-    // Speed Curve phases
-    if (score >= 950000) {
-        // Massive speed jump for Hell mode
-        currentSpeed = 2500;
-    } else {
-        // Base smooth exponential curve
-        currentSpeed = baseSpeed * Math.pow(1.04, timeSurvived);
-        
-        if (score >= 50000) {
-            // Mid-game: noticeably faster step up and higher cap
-            currentSpeed = Math.max(1300, Math.min(currentSpeed, 1800));
-        } else {
-            // Early game: gentle speed cap
-            currentSpeed = Math.min(currentSpeed, 1100);
-        }
-    }
+    // Speed Curve
+    // Smoothly increases over time. Starts at 400.
+    // Adds 15 speed every second. In 60 seconds = 1300. In 120 seconds = 2200 (Extremely fast)
+    currentSpeed = baseSpeed + (timeSurvived * 15);
 
     // Smooth player position
     const lerp = Math.min(1, 35 * dt); // faster horizontal snap
