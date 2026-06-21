@@ -17,6 +17,7 @@ const winScoreEl = document.getElementById('win-score');
 const winComboEl = document.getElementById('win-combo');
 const winTimeEl = document.getElementById('win-time');
 const winRestartBtn = document.getElementById('win-restart-btn');
+const publisherContent = document.getElementById('publisher-content');
 
 // ─── Layout Constants ──────────────────────────────────────────
 const WALL_WIDTH = 6;          // thickness of each white wall
@@ -407,6 +408,11 @@ function startGame() {
     winScreen.classList.add('hidden');
     perfectText.classList.add('hidden');
     perfectText.style.animation = 'none';
+    
+    if (publisherContent) {
+        publisherContent.style.opacity = '0';
+        setTimeout(() => publisherContent.style.display = 'none', 500);
+    }
 
     resize();
     setPlayerX(true);
@@ -427,6 +433,12 @@ function gameOver() {
     gameOverScreen.classList.remove('hidden');
     finalScoreEl.innerText = Math.floor(score);
     finalComboEl.innerText = maxCombo;
+    
+    if (publisherContent) {
+        publisherContent.style.display = 'block';
+        publisherContent.offsetHeight; // trigger reflow
+        publisherContent.style.opacity = '1';
+    }
 }
 
 function triggerWin() {
@@ -440,6 +452,12 @@ function triggerWin() {
     winScoreEl.innerText = Math.floor(score).toLocaleString();
     winComboEl.innerText = maxCombo;
     winTimeEl.innerText = Math.floor(timeSurvived);
+    
+    if (publisherContent) {
+        publisherContent.style.display = 'block';
+        publisherContent.offsetHeight; // trigger reflow
+        publisherContent.style.opacity = '1';
+    }
 }
 
 // ════════════════════════════════════════════════════════════════
