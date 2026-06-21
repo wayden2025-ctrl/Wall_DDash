@@ -211,8 +211,10 @@ function spawnObstacle() {
 
     // Pick a random variant
     const variant = spikeVariants[Math.floor(Math.random() * spikeVariants.length)];
-    const spikeHeight = variant.height;
-    const spikeDepth = variant.width;
+    // Randomize the size of the specific spike chosen so they aren't all the same size
+    const randomScale = 0.7 + Math.random() * 0.7; // Scale between 0.7x and 1.4x
+    const spikeHeight = variant.height * randomScale;
+    const spikeDepth = variant.width * randomScale;
 
     obstacles.push({
         lane,
@@ -224,13 +226,12 @@ function spawnObstacle() {
     });
 
     // Determine the lane for the NEXT spike
-    let switchLanes = false;
-    // Force switch if we've clustered too many spikes on the same side
-    if (sameSideCount >= (2 + Math.random() * 5)) {
+    // Use true 50/50 randomness for the lane to avoid repetitive "grouping" patterns
+    let switchLanes = Math.random() < 0.5;
+    
+    // Prevent more than 4 on the same side so it doesn't get boring
+    if (sameSideCount >= 4) {
         switchLanes = true;
-    } else {
-        // Natural 35% chance to switch sides
-        switchLanes = Math.random() < 0.35; 
     }
 
     let physicalDistance;
