@@ -57,33 +57,39 @@
         </div>
 
         <div id="game-over-screen" class="hidden">
-            <h1>GAME OVER</h1>
-            <div class="stats">
-                <p>Score: <span id="final-score">0</span></p>
-                <p>Best Combo: <span id="final-combo">0</span></p>
+            <div class="glass-panel">
+                <h1>GAME OVER</h1>
+                <div class="stats">
+                    <p>Score: <span id="final-score">0</span></p>
+                    <p>Best Combo: <span id="final-combo">0</span></p>
+                </div>
+                <button id="restart-btn">RESTART (Space)</button>
             </div>
-            <button id="restart-btn">RESTART (Space)</button>
         </div>
         
         <div id="start-screen">
-            <img src="logo.png" alt="Wall Dash" style="max-width: 90%; max-height: 250px; margin-bottom: 20px; border-radius: 10px; box-shadow: 0 0 20px rgba(0, 150, 255, 0.3);">
-            <p>Tap, Click, or Space to switch lanes.</p>
-            <p>Dodge obstacles.</p>
-            <p style="margin-top: 20px; color: #ffcc00; font-size: 14px; text-shadow: 0 0 8px rgba(255,204,0,0.4);">If you reach 1,000,000 points in Wall Dash, you'll unlock several surprise prizes!</p>
-            <p style="margin-top: 10px; margin-bottom: 20px; color: #00ffcc; font-size: 13px; font-style: italic;">Note: For the most optimal and responsive experience, playing on Desktop is highly recommended.</p>
-            <button id="start-btn">START</button>
+            <div class="glass-panel">
+                <img src="logo.png" alt="Wall Dash" style="max-width: 90%; max-height: 250px; margin-bottom: 20px; border-radius: 10px; box-shadow: 0 0 20px rgba(0, 150, 255, 0.3);">
+                <p>Tap, Click, or Space to switch lanes.</p>
+                <p>Dodge obstacles.</p>
+                <p style="margin-top: 20px; color: #ffcc00; font-size: 14px; text-shadow: 0 0 8px rgba(255,204,0,0.4);">If you reach 1,000,000 points in Wall Dash, you'll unlock several surprise prizes!</p>
+                <p style="margin-top: 10px; margin-bottom: 20px; color: #00ffcc; font-size: 13px; font-style: italic;">Note: For the most optimal and responsive experience, playing on Desktop is highly recommended.</p>
+                <button id="start-btn">START</button>
+            </div>
         </div>
 
         <div id="win-screen" class="hidden">
-            <h1 style="color: #ffcc00; text-shadow: 0 0 30px #ffcc00, 0 0 60px #ff8800;">🏆 YOU WON 🏆</h1>
-            <p style="font-size: 22px; color: #fff; margin-bottom: 10px;">1,000,000 POINTS</p>
-            <p style="font-size: 16px; color: #ffcc00;">You are a Wall Dash legend.</p>
-            <div class="stats">
-                <p>Final Score: <span id="win-score">0</span></p>
-                <p>Best Combo: <span id="win-combo">0</span></p>
-                <p>Time Survived: <span id="win-time">0</span>s</p>
+            <div class="glass-panel">
+                <h1 style="color: #ffcc00; text-shadow: 0 0 30px #ffcc00, 0 0 60px #ff8800;">🏆 YOU WON 🏆</h1>
+                <p style="font-size: 22px; color: #fff; margin-bottom: 10px;">1,000,000 POINTS</p>
+                <p style="font-size: 16px; color: #ffcc00;">You are a Wall Dash legend.</p>
+                <div class="stats">
+                    <p>Final Score: <span id="win-score">0</span></p>
+                    <p>Best Combo: <span id="win-combo">0</span></p>
+                    <p>Time Survived: <span id="win-time">0</span>s</p>
+                </div>
+                <button id="win-restart-btn">PLAY AGAIN</button>
             </div>
-            <button id="win-restart-btn">PLAY AGAIN</button>
         </div>
         </div>
         

@@ -47,6 +47,7 @@ const player = {
 // ─── Obstacles & Particles ─────────────────────────────────────
 let obstacles = [];
 let particles = [];
+let bgObjects = [];
 let spawnTimer = 0;
 const SPAWN_INTERVAL = 0.45;  // spawn every 0.45s – dense but playable
 const MIN_SPIKE_GAP = 50;     // minimum vertical px between any two spikes on the same wall
@@ -56,8 +57,22 @@ let lastSpawnLane = -1;        // track last wall to alternate
 const NEAR_MISS_DIST = 90;
 const PERFECT_DIST = 35;
 
-// ─── Scrolling grid lines (cosmetic) ──────────────────────────
+// ─── Rendering & Parallax ──────────────────────────
 let scrollOffset = 0;
+let screenShakeTime = 0;
+let screenShakeIntensity = 0;
+
+// Initialize Background Objects
+for (let i = 0; i < 20; i++) {
+    bgObjects.push({
+        x: Math.random(),
+        y: Math.random(),
+        z: Math.random(),
+        type: Math.floor(Math.random() * 3), // 0: hex, 1: tri, 2: line
+        speed: 0.1 + Math.random() * 0.4,
+        size: 20 + Math.random() * 80
+    });
+}
 
 // ════════════════════════════════════════════════════════════════
 //  RESIZE
@@ -88,6 +103,22 @@ function switchLane() {
     setPlayerX(false);
     playTone(300 + player.lane * 100, 0.05, 'triangle');
     checkNearMiss();
+    
+    // Impact and Screen Shake
+    screenShakeTime = 0.1;
+    screenShakeIntensity = 4;
+    
+    // Impact dash burst
+    for(let i=0; i<15; i++) {
+        particles.push({
+            x: player.visualX,
+            y: player.visualY,
+            vx: (Math.random() - 0.5) * 300,
+            vy: (Math.random() - 0.5) * 300,
+            color: '#00ffff',
+            life: 0.4 + Math.random() * 0.3
+        });
+    }
 }
 
 window.addEventListener('keydown', (e) => {
@@ -482,8 +513,21 @@ function loop(timestamp) {
         }
     }
 
+    // Ambient environment particles (dust, sparks, light motes)
+    if (isPlaying && Math.random() < 0.8) {
+        particles.push({
+            x: Math.random() * canvas.width,
+            y: canvas.height + 20, // start slightly offscreen bottom
+            vx: (Math.random() - 0.5) * 20,
+            vy: -currentSpeed * (0.1 + Math.random() * 0.2), // float up slowly relative to speed
+            color: Math.random() > 0.5 ? 'rgba(0, 255, 255, 0.4)' : 'rgba(255, 0, 255, 0.4)',
+            life: 1.5 + Math.random() * 1.0,
+            isAmbient: true
+        });
+    }
+
     // Wall electric sparks
-    if (isPlaying && Math.random() < 0.1) {
+    if (isPlaying && Math.random() < 0.2) {
         const wallX = Math.random() > 0.5 ? WALL_WIDTH : canvas.width - WALL_WIDTH;
         particles.push({
             x: wallX,
@@ -491,8 +535,22 @@ function loop(timestamp) {
             vx: (wallX === WALL_WIDTH ? 1 : -1) * (Math.random() * 100),
             vy: (Math.random() - 0.5) * 200,
             color: '#00ffff',
-            life: 0.3 + Math.random() * 0.2
+            life: 0.4 + Math.random() * 0.3
         });
+    }
+
+    // Update parallax bg objects
+    bgObjects.forEach(bg => {
+        bg.y += currentSpeed * dt * bg.speed * 0.001;
+        if (bg.y > 1.2) {
+            bg.y = -0.2;
+            bg.x = Math.random();
+        }
+    });
+
+    // Screen Shake
+    if (screenShakeTime > 0) {
+        screenShakeTime -= dt;
     }
 
     // Scroll offset for perspective grid
@@ -533,80 +591,100 @@ function draw() {
     const w = canvas.width;
     const h = canvas.height;
 
-    // ── Background (Deep Cyber Tunnel) ──
+    ctx.save();
+    
+    // Apply camera shake
+    if (screenShakeTime > 0) {
+        const shakeX = (Math.random() - 0.5) * screenShakeIntensity;
+        const shakeY = (Math.random() - 0.5) * screenShakeIntensity;
+        ctx.translate(shakeX, shakeY);
+    }
+
+    // ── Background (Deep Cyber Void) ──
     const bgGrad = ctx.createLinearGradient(0, 0, 0, h);
-    bgGrad.addColorStop(0, '#02000a');
-    bgGrad.addColorStop(1, '#110022');
+    bgGrad.addColorStop(0, '#000005');
+    bgGrad.addColorStop(1, '#050a15');
     ctx.fillStyle = bgGrad;
     ctx.fillRect(0, 0, w, h);
 
-    // ── Giant Background Rings ──
-    ctx.strokeStyle = 'rgba(255, 0, 255, 0.05)';
-    ctx.lineWidth = 4;
-    const time = performance.now() * 0.001;
-    ctx.beginPath();
-    ctx.arc(w/2, h/2, 250 + Math.sin(time)*20, 0, Math.PI*2);
-    ctx.stroke();
-    
-    ctx.beginPath();
-    ctx.arc(w/2, h/2, 400 + Math.cos(time*0.8)*30, 0, Math.PI*2);
-    ctx.stroke();
-
-    // ── Perspective Grid ────
-    ctx.strokeStyle = 'rgba(0, 255, 255, 0.1)';
-    ctx.lineWidth = 1.5;
-    
-    // Vertical diverging lines
-    const centerX = w / 2;
-    for (let i = 0; i <= 10; i++) {
-        const offset = (i - 5) * 40;
+    // ── Parallax Mid Background (Geometry Dash style floating objects) ──
+    bgObjects.forEach(bg => {
+        const px = bg.x * w;
+        const py = bg.y * h;
+        
+        ctx.strokeStyle = `rgba(0, 255, 255, ${bg.z * 0.1})`;
+        ctx.lineWidth = 1 + bg.z * 2;
         ctx.beginPath();
-        ctx.moveTo(centerX, 0); 
-        ctx.lineTo(centerX + offset * 4, h); 
-        ctx.stroke();
-    }
-    
-    // Horizontal accelerating lines
-    for (let i = 0; i < 25; i++) {
-        const yBase = (scrollOffset + i * 40) % 1000; 
-        const perspectiveY = (yBase * yBase) / 1000; 
-        if (perspectiveY < h && perspectiveY > 0) {
-            ctx.beginPath();
-            ctx.moveTo(WALL_WIDTH, perspectiveY);
-            ctx.lineTo(w - WALL_WIDTH, perspectiveY);
+        
+        if (bg.type === 0) { // Hexagon
+            for (let i = 0; i < 6; i++) {
+                const angle = (i / 6) * Math.PI * 2 + (performance.now() * 0.0005 * bg.speed);
+                const hx = px + Math.cos(angle) * bg.size;
+                const hy = py + Math.sin(angle) * bg.size;
+                if (i === 0) ctx.moveTo(hx, hy);
+                else ctx.lineTo(hx, hy);
+            }
+            ctx.closePath();
+            ctx.stroke();
+        } else if (bg.type === 1) { // Triangle
+            for (let i = 0; i < 3; i++) {
+                const angle = (i / 3) * Math.PI * 2 - (performance.now() * 0.001 * bg.speed);
+                const hx = px + Math.cos(angle) * bg.size;
+                const hy = py + Math.sin(angle) * bg.size;
+                if (i === 0) ctx.moveTo(hx, hy);
+                else ctx.lineTo(hx, hy);
+            }
+            ctx.closePath();
+            ctx.stroke();
+        } else { // Vertical energy line
+            ctx.strokeStyle = `rgba(255, 0, 255, ${bg.z * 0.05})`;
+            ctx.moveTo(px, py - bg.size);
+            ctx.lineTo(px, py + bg.size * 3);
             ctx.stroke();
         }
-    }
+    });
 
-    // ── Draw Cyber Walls ───────────────────────
-    ctx.fillStyle = '#050508'; 
+    // ── Giant Mid-Background Rings ──
+    ctx.strokeStyle = 'rgba(0, 255, 255, 0.03)';
+    ctx.lineWidth = 10;
+    const time = performance.now() * 0.0005;
+    ctx.beginPath();
+    ctx.arc(w/2, h/2, 300 + Math.sin(time)*30, 0, Math.PI*2);
+    ctx.stroke();
+
+    // ── Draw Energy Tower Walls ───────────────────────
+    ctx.fillStyle = '#03050a'; 
     ctx.fillRect(0, 0, WALL_WIDTH, h);
     ctx.fillRect(w - WALL_WIDTH, 0, WALL_WIDTH, h);
 
+    // Flowing inner energy core (dark cyan)
+    ctx.fillStyle = '#004455';
+    ctx.fillRect(2, 0, WALL_WIDTH-2, h);
+    ctx.fillRect(w - WALL_WIDTH + 2, 0, WALL_WIDTH-2, h);
+
     // Glowing edge trim (Electric cyan)
-    ctx.shadowBlur = 20;
+    ctx.shadowBlur = 25;
     ctx.shadowColor = '#00ffff';
     ctx.strokeStyle = '#00ffff';
-    ctx.lineWidth = 4;
+    ctx.lineWidth = 5;
 
-    // Left edge
     ctx.beginPath();
     ctx.moveTo(WALL_WIDTH, 0);
     ctx.lineTo(WALL_WIDTH, h);
     ctx.stroke();
-    // Right edge
+
     ctx.beginPath();
     ctx.moveTo(w - WALL_WIDTH, 0);
     ctx.lineTo(w - WALL_WIDTH, h);
     ctx.stroke();
     ctx.shadowBlur = 0;
 
-    // ── Draw Pink Crystal Spikes ────────
+    // ── Draw Multi-layered Crystal Obstacles ────────
     obstacles.forEach(ob => {
         const [x0, y0, x1, y1, x2, y2] = spikeVerts(ob);
 
-        // Dark metal base
-        ctx.fillStyle = '#110022';
+        // Dark reflective crystal base
+        ctx.fillStyle = '#0a0011';
         ctx.beginPath();
         ctx.moveTo(x0, y0);
         ctx.lineTo(x2, y2);
@@ -614,22 +692,33 @@ function draw() {
         ctx.closePath();
         ctx.fill();
 
-        // Neon pink outline
+        // Neon pink geometric outline
         ctx.shadowBlur = 15;
-        ctx.shadowColor = '#ff00ff';
-        ctx.strokeStyle = '#ff00ff';
-        ctx.lineWidth = 2.5;
+        ctx.shadowColor = '#ff0055';
+        ctx.strokeStyle = '#ff0055';
+        ctx.lineWidth = 3;
         ctx.stroke();
 
-        // Inner white-hot pink energy core
-        ctx.fillStyle = '#ffffff';
-        ctx.shadowBlur = 20;
-        ctx.shadowColor = '#ff00ff';
-        ctx.beginPath();
-        // Jagged inner crystal
-        const coreSize = 0.3 + Math.random()*0.1;
+        // Inner glowing magenta layer
         const cx = (x0 + x1 + x2) / 3;
         const cy = (y0 + y1 + y2) / 3;
+        ctx.fillStyle = '#ff00ff';
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = '#ff00ff';
+        ctx.beginPath();
+        const midSize = 0.6;
+        ctx.moveTo(cx + (x0 - cx) * midSize, cy + (y0 - cy) * midSize);
+        ctx.lineTo(cx + (x2 - cx) * midSize, cy + (y2 - cy) * midSize);
+        ctx.lineTo(cx + (x1 - cx) * midSize, cy + (y1 - cy) * midSize);
+        ctx.closePath();
+        ctx.fill();
+
+        // White-hot energy core
+        ctx.fillStyle = '#ffffff';
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = '#ffffff';
+        ctx.beginPath();
+        const coreSize = 0.2;
         ctx.moveTo(cx + (x0 - cx) * coreSize, cy + (y0 - cy) * coreSize);
         ctx.lineTo(cx + (x2 - cx) * coreSize, cy + (y2 - cy) * coreSize);
         ctx.lineTo(cx + (x1 - cx) * coreSize, cy + (y1 - cy) * coreSize);
@@ -649,10 +738,10 @@ function draw() {
         ctx.globalAlpha = Math.max(0, p.life);
         ctx.fillStyle = p.color;
         
-        ctx.shadowBlur = 8;
+        ctx.shadowBlur = p.isAmbient ? 4 : 10;
         ctx.shadowColor = p.color;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, p.isAmbient ? 2 : 3, 0, Math.PI * 2);
         ctx.fill();
         
         if (p.life <= 0) particles.splice(i, 1);
@@ -667,7 +756,7 @@ function draw() {
             const py = player.visualY || player.y;
 
             // Massive Cyan Glow
-            ctx.shadowBlur = 25 + getMultiplier() * 5;
+            ctx.shadowBlur = 30 + getMultiplier() * 5;
             ctx.shadowColor = '#00ffff';
             ctx.fillStyle = '#00ffff';
 
@@ -684,6 +773,8 @@ function draw() {
             ctx.shadowBlur = 0;
         }
     }
+
+    ctx.restore(); // Restore camera shake
 
     // ── Sci-Fi HUD (drawn LAST, on top of everything) ──────────
     drawHUD(w, h);
