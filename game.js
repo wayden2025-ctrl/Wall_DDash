@@ -196,8 +196,8 @@ function spawnObstacle() {
     obstacles.push({
         lane,
         y: yPos,
-        height: SPIKE_BASE + Math.random() * 40,
-        depth: SPIKE_DEPTH + Math.random() * 35,
+        height: SPIKE_BASE + Math.random() * 60,
+        depth: SPIKE_DEPTH + 10 + Math.random() * 40,
         passed: false
     });
 
@@ -468,20 +468,35 @@ function loop(timestamp) {
     spawnTimer -= dt;
     if (spawnTimer <= 0) spawnObstacle();
 
-    // Player comet trail particles
-    if (isPlaying && Math.random() < 0.6) {
+    // Heavy player comet trail
+    if (isPlaying) {
+        for (let k=0; k<2; k++) {
+            particles.push({
+                x: player.visualX + (Math.random() - 0.5) * (PLAYER_RADIUS * 1.5),
+                y: player.visualY + PLAYER_RADIUS,
+                vx: (Math.random() - 0.5) * 60,
+                vy: currentSpeed * 0.5 + Math.random() * 150, 
+                color: Math.random() > 0.5 ? '#00ffff' : '#ff00ff',
+                life: 0.8 + Math.random() * 0.6
+            });
+        }
+    }
+
+    // Wall electric sparks
+    if (isPlaying && Math.random() < 0.1) {
+        const wallX = Math.random() > 0.5 ? WALL_WIDTH : canvas.width - WALL_WIDTH;
         particles.push({
-            x: player.visualX + (Math.random() - 0.5) * (PLAYER_RADIUS * 0.8),
-            y: player.visualY + PLAYER_RADIUS,
-            vx: (Math.random() - 0.5) * 50,
-            vy: currentSpeed * 0.4 + Math.random() * 100, // drag down
+            x: wallX,
+            y: Math.random() * canvas.height,
+            vx: (wallX === WALL_WIDTH ? 1 : -1) * (Math.random() * 100),
+            vy: (Math.random() - 0.5) * 200,
             color: '#00ffff',
-            life: 0.6 + Math.random() * 0.4
+            life: 0.3 + Math.random() * 0.2
         });
     }
 
     // Scroll offset for perspective grid
-    scrollOffset = (scrollOffset + currentSpeed * dt) % 800;
+    scrollOffset = (scrollOffset + currentSpeed * dt) % 1000;
 
     // Update obstacles
     for (let i = obstacles.length - 1; i >= 0; i--) {
@@ -518,44 +533,80 @@ function draw() {
     const w = canvas.width;
     const h = canvas.height;
 
-    // ── Background ────────────────────
-    ctx.fillStyle = '#0a0a0c';
+    // ── Background (Deep Cyber Tunnel) ──
+    const bgGrad = ctx.createLinearGradient(0, 0, 0, h);
+    bgGrad.addColorStop(0, '#02000a');
+    bgGrad.addColorStop(1, '#110022');
+    ctx.fillStyle = bgGrad;
     ctx.fillRect(0, 0, w, h);
 
-    // ── Scrolling grid lines (subtle) ─
-    ctx.strokeStyle = 'rgba(255,255,255,0.03)';
-    ctx.lineWidth = 1;
-    for (let y = scrollOffset; y < h; y += 40) {
+    // ── Giant Background Rings ──
+    ctx.strokeStyle = 'rgba(255, 0, 255, 0.05)';
+    ctx.lineWidth = 4;
+    const time = performance.now() * 0.001;
+    ctx.beginPath();
+    ctx.arc(w/2, h/2, 250 + Math.sin(time)*20, 0, Math.PI*2);
+    ctx.stroke();
+    
+    ctx.beginPath();
+    ctx.arc(w/2, h/2, 400 + Math.cos(time*0.8)*30, 0, Math.PI*2);
+    ctx.stroke();
+
+    // ── Perspective Grid ────
+    ctx.strokeStyle = 'rgba(0, 255, 255, 0.1)';
+    ctx.lineWidth = 1.5;
+    
+    // Vertical diverging lines
+    const centerX = w / 2;
+    for (let i = 0; i <= 10; i++) {
+        const offset = (i - 5) * 40;
         ctx.beginPath();
-        ctx.moveTo(WALL_WIDTH, y);
-        ctx.lineTo(w - WALL_WIDTH, y);
+        ctx.moveTo(centerX, 0); 
+        ctx.lineTo(centerX + offset * 4, h); 
         ctx.stroke();
     }
+    
+    // Horizontal accelerating lines
+    for (let i = 0; i < 25; i++) {
+        const yBase = (scrollOffset + i * 40) % 1000; 
+        const perspectiveY = (yBase * yBase) / 1000; 
+        if (perspectiveY < h && perspectiveY > 0) {
+            ctx.beginPath();
+            ctx.moveTo(WALL_WIDTH, perspectiveY);
+            ctx.lineTo(w - WALL_WIDTH, perspectiveY);
+            ctx.stroke();
+        }
+    }
 
-    // ── Draw Walls ────────────────────
-    ctx.fillStyle = '#ffffff';
-    ctx.shadowBlur = 8;
-    ctx.shadowColor = 'rgba(255,255,255,0.4)';
+    // ── Draw Cyber Walls ───────────────────────
+    ctx.fillStyle = '#050508'; 
     ctx.fillRect(0, 0, WALL_WIDTH, h);
     ctx.fillRect(w - WALL_WIDTH, 0, WALL_WIDTH, h);
+
+    // Glowing edge trim (Electric cyan)
+    ctx.shadowBlur = 20;
+    ctx.shadowColor = '#00ffff';
+    ctx.strokeStyle = '#00ffff';
+    ctx.lineWidth = 4;
+
+    // Left edge
+    ctx.beginPath();
+    ctx.moveTo(WALL_WIDTH, 0);
+    ctx.lineTo(WALL_WIDTH, h);
+    ctx.stroke();
+    // Right edge
+    ctx.beginPath();
+    ctx.moveTo(w - WALL_WIDTH, 0);
+    ctx.lineTo(w - WALL_WIDTH, h);
+    ctx.stroke();
     ctx.shadowBlur = 0;
 
-    // ── Draw Obstacles (spikes) ───────
-    ctx.shadowBlur = 12;
-    ctx.shadowColor = '#ff0055';
-
+    // ── Draw Pink Crystal Spikes ────────
     obstacles.forEach(ob => {
         const [x0, y0, x1, y1, x2, y2] = spikeVerts(ob);
 
-        // Gradient fill for depth
-        let gx0, gx1;
-        if (ob.lane === 0) { gx0 = x0; gx1 = x2; }
-        else               { gx0 = x0; gx1 = x2; }
-        const grad = ctx.createLinearGradient(gx0, ob.y + ob.height / 2, gx1, ob.y + ob.height / 2);
-        grad.addColorStop(0, '#ff0055');
-        grad.addColorStop(1, '#ff3377');
-
-        ctx.fillStyle = grad;
+        // Dark metal base
+        ctx.fillStyle = '#110022';
         ctx.beginPath();
         ctx.moveTo(x0, y0);
         ctx.lineTo(x2, y2);
@@ -563,15 +614,32 @@ function draw() {
         ctx.closePath();
         ctx.fill();
 
-        // Outline
-        ctx.strokeStyle = '#ff6699';
-        ctx.lineWidth = 1.5;
+        // Neon pink outline
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = '#ff00ff';
+        ctx.strokeStyle = '#ff00ff';
+        ctx.lineWidth = 2.5;
         ctx.stroke();
+
+        // Inner white-hot pink energy core
+        ctx.fillStyle = '#ffffff';
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = '#ff00ff';
+        ctx.beginPath();
+        // Jagged inner crystal
+        const coreSize = 0.3 + Math.random()*0.1;
+        const cx = (x0 + x1 + x2) / 3;
+        const cy = (y0 + y1 + y2) / 3;
+        ctx.moveTo(cx + (x0 - cx) * coreSize, cy + (y0 - cy) * coreSize);
+        ctx.lineTo(cx + (x2 - cx) * coreSize, cy + (y2 - cy) * coreSize);
+        ctx.lineTo(cx + (x1 - cx) * coreSize, cy + (y1 - cy) * coreSize);
+        ctx.closePath();
+        ctx.fill();
+        
+        ctx.shadowBlur = 0;
     });
 
-    ctx.shadowBlur = 0;
-
-    // ── Draw Particles ────────────────
+    // ── Draw Particles ────────────────────────
     for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i];
         const pdt = isPlaying ? 0.016 * timeScale : 0.016;
@@ -580,44 +648,41 @@ function draw() {
         p.life -= pdt * 2;
         ctx.globalAlpha = Math.max(0, p.life);
         ctx.fillStyle = p.color;
-        ctx.fillRect(p.x - 2, p.y - 2, 4, 4);
+        
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+        ctx.fill();
+        
         if (p.life <= 0) particles.splice(i, 1);
     }
     ctx.globalAlpha = 1;
+    ctx.shadowBlur = 0;
 
-    // ── Draw Player ───────────────────
-    if (isPlaying) {
-        const px = player.visualX;
-        const py = player.visualY || player.y;
+    // ── Draw Player ───────────────────────────
+    if (isPlaying || particles.length > 0) {
+        if (isPlaying) {
+            const px = player.visualX;
+            const py = player.visualY || player.y;
 
-        // Glow
-        ctx.shadowBlur = 15 + getMultiplier() * 3;
-        ctx.shadowColor = '#00ffff';
-        ctx.fillStyle = '#00ffff';
+            // Massive Cyan Glow
+            ctx.shadowBlur = 25 + getMultiplier() * 5;
+            ctx.shadowColor = '#00ffff';
+            ctx.fillStyle = '#00ffff';
 
-        ctx.beginPath();
-        ctx.arc(px, py, PLAYER_RADIUS, 0, Math.PI * 2);
-        ctx.fill();
+            ctx.beginPath();
+            ctx.arc(px, py, PLAYER_RADIUS, 0, Math.PI * 2);
+            ctx.fill();
 
-        // Inner bright core
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath();
-        ctx.arc(px, py, PLAYER_RADIUS * 0.45, 0, Math.PI * 2);
-        ctx.fill();
+            // Inner bright core
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(px, py, PLAYER_RADIUS * 0.5, 0, Math.PI * 2);
+            ctx.fill();
 
-        ctx.shadowBlur = 0;
-
-        // Trail
-        ctx.globalAlpha = 0.25;
-        ctx.fillStyle = '#00ffff';
-        ctx.beginPath();
-        ctx.arc(px, py + 8, PLAYER_RADIUS * 0.7, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.globalAlpha = 0.1;
-        ctx.beginPath();
-        ctx.arc(px, py + 16, PLAYER_RADIUS * 0.4, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.globalAlpha = 1;
+            ctx.shadowBlur = 0;
+        }
     }
 
     // ── Sci-Fi HUD (drawn LAST, on top of everything) ──────────
