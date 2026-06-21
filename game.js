@@ -104,10 +104,7 @@ function switchLane() {
     playTone(300 + player.lane * 100, 0.05, 'triangle');
     checkNearMiss();
     
-    // Impact and Screen Shake
-    screenShakeTime = 0.1;
-    screenShakeIntensity = 4;
-    
+
     // Impact dash burst
     for(let i=0; i<15; i++) {
         particles.push({
