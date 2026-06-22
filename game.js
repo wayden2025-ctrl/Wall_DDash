@@ -122,7 +122,7 @@ const publisherContent = document.getElementById('publisher-content');
 const WALL_WIDTH = 6;          // thickness of each white wall
 const SPIKE_BASE = 30;         // spike height along the wall (vertical size)
 const SPIKE_DEPTH = 50;        // how far the spike juts inward
-const PLAYER_RADIUS = 12;      // player is a small circle on the wall
+const PLAYER_RADIUS = 18;      // player is a small circle on the wall
 
 // ─── Game State ────────────────────────────────────────────────
 let isPlaying = false;
