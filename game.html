@@ -101,7 +101,7 @@
         <a href="mailto:wayden2025@gmail.com">Contact Us</a>
     </footer>
 
-    <script src="game.js?v=34"></script>
+    <script src="game.js?v=35"></script>
 
     <div id="cookie-banner" class="cookie-banner">
         <p>We use cookies to personalize content, provide social media features, and analyze our traffic. We also share information about your use of our site with our advertising and analytics partners. <a href="privacy.html">Learn more</a>.</p>
@@ -132,7 +132,15 @@
             <!-- Titles will cross-fade here -->
         </div>
         
-        <img id="confirm-btn" src="confirm_btn.png" onclick="document.getElementById('customize-modal').style.display='none';" style="margin-top: 30px; height: 70px; cursor: pointer; filter: drop-shadow(0 0 15px #ff00ff); transition: filter 0.5s ease, transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+        <button id="confirm-btn" onclick="document.getElementById('customize-modal').style.display='none';" style="position: relative; margin-top: 40px; background: rgba(0,0,0,0.8); border: 2px solid var(--theme-color, #ff00ff); color: var(--theme-color, #ff00ff); padding: 15px 60px; font-size: 26px; border-radius: 4px; cursor: pointer; text-transform: uppercase; font-family: 'Courier New', Courier, monospace; font-weight: bold; box-shadow: 0 0 15px var(--theme-color, #ff00ff), inset 0 0 15px var(--theme-color, #ff00ff); transition: all 0.3s ease; text-shadow: 0 0 8px var(--theme-color, #ff00ff); z-index: 1;" onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 0 30px var(--theme-color), inset 0 0 30px var(--theme-color)';" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 0 15px var(--theme-color), inset 0 0 15px var(--theme-color)';">
+    <span style="position: absolute; top: -6px; left: -10px; width: 20px; height: 2px; background: var(--theme-color); box-shadow: 0 0 10px var(--theme-color);"></span>
+    <span style="position: absolute; top: -6px; right: -10px; width: 20px; height: 2px; background: var(--theme-color); box-shadow: 0 0 10px var(--theme-color);"></span>
+    <span style="position: absolute; bottom: -6px; left: -10px; width: 20px; height: 2px; background: var(--theme-color); box-shadow: 0 0 10px var(--theme-color);"></span>
+    <span style="position: absolute; bottom: -6px; right: -10px; width: 20px; height: 2px; background: var(--theme-color); box-shadow: 0 0 10px var(--theme-color);"></span>
+    <span style="position: absolute; top: 50%; left: -30px; width: 20px; height: 2px; background: var(--theme-color); box-shadow: 0 0 10px var(--theme-color);"></span>
+    <span style="position: absolute; top: 50%; right: -30px; width: 20px; height: 2px; background: var(--theme-color); box-shadow: 0 0 10px var(--theme-color);"></span>
+    CONFIRM
+</button>
     </div>
 
     <script>
@@ -187,7 +195,7 @@
             carousel.style.boxShadow = '0 0 40px ' + color + '40'; // 40 is alpha in hex approx 25%
             carousel.style.background = 'radial-gradient(circle, ' + color + '10 0%, transparent 80%)';
             
-            confirmBtn.style.filter = 'drop-shadow(0 0 20px ' + color + ')';
+            confirmBtn.style.setProperty('--theme-color', color);
         }
 
         orbs.forEach(orb => {
