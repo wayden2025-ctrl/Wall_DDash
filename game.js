@@ -65,6 +65,18 @@ const spikeVariants = [
 
 
 // --- Orb Customization ---
+
+window.updateOrbSelection = function(id, color, src) {
+    selectedOrbId = id;
+    selectedOrbColor = color;
+    if (id > 0) {
+        customOrbImage = new Image();
+        customOrbImage.src = src;
+    } else {
+        customOrbImage = null;
+    }
+};
+
 let selectedOrbId = parseInt(localStorage.getItem('selectedOrbId') || '0', 10);
 let selectedOrbColor = localStorage.getItem('selectedOrbColor') || '#00ffff';
 let customOrbImage = null;
