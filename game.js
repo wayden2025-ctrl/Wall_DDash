@@ -131,6 +131,7 @@ const player = {
 
 // ─── Obstacles & Particles ─────────────────────────────────────
 let obstacles = [];
+    player.history = [];
 let particles = [];
 let spawnTimer = 0;
 const SPAWN_INTERVAL = 0.45;  // spawn every 0.45s – dense but playable
@@ -536,6 +537,7 @@ function startGame() {
     timeSurvived = 0;
     currentSpeed = baseSpeed;
     obstacles = [];
+    player.history = [];
     particles = [];
     spawnTimer = 1.5; // grace period before first spike
     scrollOffset = 0;
@@ -621,6 +623,9 @@ function loop(timestamp) {
     // Subtle Y bump: max 12px up in the middle of the dash
     const arcHeight = 12 * Math.sin(Math.PI * (1 - (distToTarget / maxDist)));
     player.visualY = player.y - arcHeight;
+    player.history = player.history || [];
+    player.history.push({x: player.visualX, y: player.visualY});
+    if (player.history.length > 12) player.history.shift();
 
     // Spawning
     spawnTimer -= dt;
@@ -909,7 +914,7 @@ function draw() {
         const px = player.visualX;
         const py = player.visualY || player.y;
 
-        ctx.shadowBlur = selectedOrbId === 0 ? 5 : 20;
+        ctx.shadowBlur = selectedOrbId === 0 ? 15 : 45;
         ctx.shadowColor = selectedOrbColor;
 
         if (selectedOrbId === 0) {
