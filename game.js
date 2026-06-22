@@ -79,6 +79,21 @@ window.updateOrbSelection = function(id, color, src) {
 
 let selectedOrbId = parseInt(localStorage.getItem('selectedOrbId') || '0', 10);
 let selectedOrbColor = localStorage.getItem('selectedOrbColor') || '#00ffff';
+
+function getVaryingColor(hex) {
+    if (!hex || hex.length !== 7) return hex;
+    let r = parseInt(hex.slice(1,3), 16);
+    let g = parseInt(hex.slice(3,5), 16);
+    let b = parseInt(hex.slice(5,7), 16);
+    
+    const vary = () => Math.floor(Math.random() * 100 - 50); // +/- 50 variance for noticeable differences
+    r = Math.min(255, Math.max(0, r + vary()));
+    g = Math.min(255, Math.max(0, g + vary()));
+    b = Math.min(255, Math.max(0, b + vary()));
+    
+    return `rgba(${r}, ${g}, ${b}, 0.8)`;
+}
+
 let customOrbImage = null;
 
 if (selectedOrbId > 0) {
@@ -491,6 +506,23 @@ function triggerPerfect() {
     playPerfect();
     combo++;
     score += 10 * getMultiplier();
+
+    // Update active particles (trail, sparks, ambient)
+    for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        if (p.life !== undefined) {
+            p.life -= dt;
+            if (p.life <= 0) particles.splice(i, 1);
+        } else {
+            // Fallback for particles without life (if any)
+            if (p.y > canvas.height + 50 || p.y < -50 || p.x < -50 || p.x > canvas.width + 50) {
+                particles.splice(i, 1);
+            }
+        }
+    }
+
     updateUI();
 }
 
@@ -627,6 +659,21 @@ function loop(timestamp) {
     player.history.push({x: player.visualX, y: player.visualY});
     if (player.history.length > 12) player.history.shift();
 
+    // Player trail particles
+    if (isPlaying) {
+        for (let i = 0; i < 2; i++) {
+            particles.push({
+                size: 2 + Math.random() * 4,
+                x: player.visualX + (Math.random() - 0.5) * PLAYER_RADIUS * 1.5,
+                y: player.visualY + (Math.random() - 0.5) * PLAYER_RADIUS * 1.5,
+                vx: (Math.random() - 0.5) * 60,
+                vy: -Math.random() * 300 - 150, // Fly backwards fast
+                color: getVaryingColor(selectedOrbColor),
+                life: 0.4 + Math.random() * 0.4
+            });
+        }
+    }
+
     // Spawning
     spawnTimer -= dt;
     if (spawnTimer <= 0) spawnObstacle();
@@ -723,6 +770,23 @@ function loop(timestamp) {
 
         // Remove offscreen
         if (ob.y > canvas.height + 50) obstacles.splice(i, 1);
+    }
+
+
+    // Update active particles (trail, sparks, ambient)
+    for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        if (p.life !== undefined) {
+            p.life -= dt;
+            if (p.life <= 0) particles.splice(i, 1);
+        } else {
+            // Fallback for particles without life (if any)
+            if (p.y > canvas.height + 50 || p.y < -50 || p.x < -50 || p.x > canvas.width + 50) {
+                particles.splice(i, 1);
+            }
+        }
     }
 
     updateUI();
@@ -955,19 +1019,35 @@ function draw() {
         ctx.shadowBlur = 0; // reset
 
         // Trail
-        ctx.globalAlpha = 0.25;
-        ctx.fillStyle = selectedOrbColor;
-        ctx.beginPath();
-        ctx.arc(px, py + 8, PLAYER_RADIUS * 0.7, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.arc(px, py + 16, PLAYER_RADIUS * 0.4, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.globalAlpha = 1;
+        if (player.history) {
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = selectedOrbColor;
+            for (let i = 0; i < player.history.length; i++) {
+                const pt = player.history[i];
+                const ratio = i / player.history.length;
+                ctx.globalAlpha = ratio * 0.6; // Fades out towards the tail
+                ctx.fillStyle = selectedOrbColor;
+                ctx.beginPath();
+                ctx.arc(pt.x, pt.y, PLAYER_RADIUS * Math.max(0.2, (0.4 + 0.6 * ratio)), 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        ctx.globalAlpha = 1.0;
     }
 
     
     
+
+    // ── Draw Particles ────────────────────────────
+    particles.forEach(p => {
+        ctx.fillStyle = p.color || '#00ffff';
+        ctx.globalAlpha = p.life !== undefined ? Math.max(0, p.life) : 1;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+    });
+    ctx.globalAlpha = 1.0;
+
     // ── Bottom Fog / Energy Mist ───────────────────────
     const fogGrad = ctx.createLinearGradient(0, h - 150, 0, h);
     fogGrad.addColorStop(0, 'rgba(255, 0, 255, 0)');
