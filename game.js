@@ -62,6 +62,9 @@ const spikeVariants = [
     };
 });
 
+const playerImage = new Image();
+playerImage.src = 'player.png';
+
 // UI Elements
 const scoreDisplay = document.getElementById('score-display');
 const comboDisplay = document.getElementById('combo-display');
@@ -885,21 +888,22 @@ function draw() {
         const px = player.visualX;
         const py = player.visualY || player.y;
 
-        // Glow
-        ctx.shadowBlur = 5;
+        // Render Player Image
+        // Scale image relative to hitbox radius. The image has a bit of built-in transparent padding.
+        const playerSize = PLAYER_RADIUS * 2 * 1.8; 
+        
+        // Add short neon glow vibrance
+        ctx.shadowBlur = 20; 
         ctx.shadowColor = '#00ffff';
-        ctx.fillStyle = '#00ffff';
-
-        ctx.beginPath();
-        ctx.arc(px, py, PLAYER_RADIUS, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Inner bright core
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath();
-        ctx.arc(px, py, PLAYER_RADIUS * 0.45, 0, Math.PI * 2);
-        ctx.fill();
-
+        
+        ctx.drawImage(
+            playerImage,
+            px - playerSize / 2,
+            py - playerSize / 2,
+            playerSize,
+            playerSize
+        );
+        
         ctx.shadowBlur = 0; // reset
 
         // Trail
