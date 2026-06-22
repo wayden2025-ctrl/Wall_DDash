@@ -1,3 +1,56 @@
+
+// --- Audio System ---
+const playlist = [
+    'monume-synthwave-retro-80s-498055.m4a',
+    'monume-cyberpunk-547930.m4a',
+    'delosound-inspiring-motivation-synthwave-398285.m4a',
+    'the_mountain-electronic-retrowave-132335.m4a'
+];
+
+let shuffledPlaylist = [];
+let currentTrackIndex = 0;
+let bgMusic = new Audio();
+bgMusic.volume = 0.5;
+
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+function playNextTrack() {
+    if (currentTrackIndex >= shuffledPlaylist.length) {
+        // Reshuffle when we reach the end
+        shuffledPlaylist = shuffleArray([...playlist]);
+        currentTrackIndex = 0;
+    }
+    
+    bgMusic.src = shuffledPlaylist[currentTrackIndex];
+    bgMusic.play().catch(e => console.log("Audio play blocked by browser:", e));
+    currentTrackIndex++;
+}
+
+bgMusic.addEventListener('ended', () => {
+    // 5 seconds delay before next song
+    setTimeout(playNextTrack, 5000);
+});
+
+let audioStarted = false;
+function initAudio() {
+    if (!audioStarted) {
+        audioStarted = true;
+        shuffledPlaylist = shuffleArray([...playlist]);
+        playNextTrack();
+    }
+}
+
+// Add interaction listener to start audio as soon as possible due to browser policies
+window.addEventListener('click', initAudio, { once: true });
+window.addEventListener('keydown', initAudio, { once: true });
+window.addEventListener('touchstart', initAudio, { once: true });
+
 const canvas = document.getElementById('game-canvas');
 const ctx = canvas.getContext('2d');
 const container = document.getElementById('game-container');
