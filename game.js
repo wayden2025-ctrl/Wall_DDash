@@ -7,29 +7,24 @@ const playlist = [
     'the_mountain-electronic-retrowave-132335.m4a'
 ];
 
-let shuffledPlaylist = [];
-let currentTrackIndex = 0;
 let bgMusic = new Audio();
 bgMusic.volume = 0.5;
 
-function shuffleArray(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
-}
-
 function playNextTrack() {
-    if (currentTrackIndex >= shuffledPlaylist.length) {
-        // Reshuffle when we reach the end
-        shuffledPlaylist = shuffleArray([...playlist]);
-        currentTrackIndex = 0;
+    // Load the current track index from local storage (defaults to 0)
+    let trackIndex = parseInt(localStorage.getItem('wallDashMusicIndex') || '0', 10);
+    
+    // Failsafe if index is out of bounds
+    if (trackIndex >= playlist.length || isNaN(trackIndex)) {
+        trackIndex = 0;
     }
     
-    bgMusic.src = shuffledPlaylist[currentTrackIndex];
+    bgMusic.src = playlist[trackIndex];
     bgMusic.play().catch(e => console.log("Audio play blocked by browser:", e));
-    currentTrackIndex++;
+    
+    // Save the next track index for when the song finishes OR the user restarts the game
+    let nextIndex = (trackIndex + 1) % playlist.length;
+    localStorage.setItem('wallDashMusicIndex', nextIndex);
 }
 
 bgMusic.addEventListener('ended', () => {
@@ -41,7 +36,6 @@ let audioStarted = false;
 function initAudio() {
     if (!audioStarted) {
         audioStarted = true;
-        shuffledPlaylist = shuffleArray([...playlist]);
         playNextTrack();
     }
 }
