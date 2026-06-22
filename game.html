@@ -105,7 +105,7 @@
         <a href="mailto:wayden2025@gmail.com">Contact Us</a>
     </footer>
 
-    <script src="game.js?v=43"></script>
+    <script src="game.js?v=44"></script>
 
     <div id="cookie-banner" class="cookie-banner">
         <p>We use cookies to personalize content, provide social media features, and analyze our traffic. We also share information about your use of our site with our advertising and analytics partners. <a href="privacy.html">Learn more</a>.</p>
@@ -168,6 +168,20 @@
         { id: 8, name: 'Magenta Spark', color: '#ff22ff', src: 'orb_8.png', titleSrc: 'title_8.png' },
         { id: 9, name: 'Platinum Star', color: '#ffffff', src: 'orb_9.png', titleSrc: 'title_9.png' },
     ];
+
+    if (localStorage.getItem('premiumBundleUnlocked') === 'true') {
+        orbs.push(
+            { id: 10, name: 'Sapphire Core', color: '#00aaff', src: 'premium_orb_10.png', titleSrc: null },
+            { id: 11, name: 'Ruby Core', color: '#ff2200', src: 'premium_orb_11.png', titleSrc: null },
+            { id: 12, name: 'Emerald Core', color: '#00ff44', src: 'premium_orb_12.png', titleSrc: null },
+            { id: 13, name: 'Amethyst Core', color: '#aa00ff', src: 'premium_orb_13.png', titleSrc: null },
+            { id: 14, name: 'Topaz Core', color: '#ffcc00', src: 'premium_orb_14.png', titleSrc: null },
+            { id: 15, name: 'Amber Core', color: '#ff7700', src: 'premium_orb_15.png', titleSrc: null },
+            { id: 16, name: 'Cyan Core', color: '#00ffff', src: 'premium_orb_16.png', titleSrc: null },
+            { id: 17, name: 'Magenta Core', color: '#ff00aa', src: 'premium_orb_17.png', titleSrc: null },
+            { id: 18, name: 'Diamond Core', color: '#e0f7fa', src: 'premium_orb_18.png', titleSrc: null }
+        );
+    }
 
     function initCustomize() {
         const carousel = document.getElementById('orb-carousel');
