@@ -101,7 +101,7 @@
         <a href="mailto:wayden2025@gmail.com">Contact Us</a>
     </footer>
 
-    <script src="game.js?v=33"></script>
+    <script src="game.js?v=34"></script>
 
     <div id="cookie-banner" class="cookie-banner">
         <p>We use cookies to personalize content, provide social media features, and analyze our traffic. We also share information about your use of our site with our advertising and analytics partners. <a href="privacy.html">Learn more</a>.</p>
@@ -132,7 +132,7 @@
             <!-- Titles will cross-fade here -->
         </div>
         
-        <button id="confirm-btn" onclick="document.getElementById('customize-modal').style.display='none';" style="margin-top: 30px; background: #111; border: 2px solid #ff00ff; color: #ff00ff; padding: 15px 50px; font-size: 24px; border-radius: 30px; cursor: pointer; text-transform: uppercase; font-weight: bold; box-shadow: 0 0 20px rgba(255,0,255,0.4); transition: border-color 0.5s ease, color 0.5s ease, box-shadow 0.5s ease;">CONFIRM</button>
+        <img id="confirm-btn" src="confirm_btn.png" onclick="document.getElementById('customize-modal').style.display='none';" style="margin-top: 30px; height: 70px; cursor: pointer; filter: drop-shadow(0 0 15px #ff00ff); transition: filter 0.5s ease, transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
     </div>
 
     <script>
@@ -187,9 +187,7 @@
             carousel.style.boxShadow = '0 0 40px ' + color + '40'; // 40 is alpha in hex approx 25%
             carousel.style.background = 'radial-gradient(circle, ' + color + '10 0%, transparent 80%)';
             
-            confirmBtn.style.borderColor = color;
-            confirmBtn.style.color = color;
-            confirmBtn.style.boxShadow = '0 0 20px ' + color + '60';
+            confirmBtn.style.filter = 'drop-shadow(0 0 20px ' + color + ')';
         }
 
         orbs.forEach(orb => {
