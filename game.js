@@ -1023,12 +1023,20 @@ function draw() {
             // Draw custom orb
             const playerSize = PLAYER_RADIUS * 2 * 1.8; 
             if (customOrbImage && customOrbImage.complete) {
+                const aspect = customOrbImage.width / customOrbImage.height;
+                let drawW = playerSize;
+                let drawH = playerSize;
+                if (aspect > 1) {
+                    drawH = playerSize / aspect;
+                } else if (aspect < 1) {
+                    drawW = playerSize * aspect;
+                }
                 ctx.drawImage(
                     customOrbImage,
-                    px - playerSize / 2,
-                    py - playerSize / 2,
-                    playerSize,
-                    playerSize
+                    px - drawW / 2,
+                    py - drawH / 2,
+                    drawW,
+                    drawH
                 );
             }
         }

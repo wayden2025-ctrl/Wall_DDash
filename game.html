@@ -101,7 +101,7 @@
         <a href="mailto:wayden2025@gmail.com">Contact Us</a>
     </footer>
 
-    <script src="game.js?v=42"></script>
+    <script src="game.js?v=43"></script>
 
     <div id="cookie-banner" class="cookie-banner">
         <p>We use cookies to personalize content, provide social media features, and analyze our traffic. We also share information about your use of our site with our advertising and analytics partners. <a href="privacy.html">Learn more</a>.</p>
@@ -216,7 +216,7 @@
             } else {
                 visual = document.createElement('img');
                 visual.src = orb.src;
-                visual.style.cssText = 'width: 100px; height: 160px; filter: drop-shadow(0 0 15px ' + orb.color + ');';
+                visual.style.cssText = 'max-width: 140px; max-height: 140px; width: auto; height: auto; object-fit: contain; filter: drop-shadow(0 0 15px ' + orb.color + ');';
             }
             item.appendChild(visual);
             
