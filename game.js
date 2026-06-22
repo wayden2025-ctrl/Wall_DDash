@@ -62,8 +62,17 @@ const spikeVariants = [
     };
 });
 
-const playerImage = new Image();
-playerImage.src = 'player.png';
+
+
+// --- Orb Customization ---
+let selectedOrbId = parseInt(localStorage.getItem('selectedOrbId') || '0', 10);
+let selectedOrbColor = localStorage.getItem('selectedOrbColor') || '#00ffff';
+let customOrbImage = null;
+
+if (selectedOrbId > 0) {
+    customOrbImage = new Image();
+    customOrbImage.src = 'orb_' + selectedOrbId + '.png';
+}
 
 // UI Elements
 const scoreDisplay = document.getElementById('score-display');
@@ -888,27 +897,49 @@ function draw() {
         const px = player.visualX;
         const py = player.visualY || player.y;
 
-        // Render Player Image
-        // Scale image relative to hitbox radius. The image has a bit of built-in transparent padding.
-        const playerSize = PLAYER_RADIUS * 2 * 1.8; 
-        
-        // Add short neon glow vibrance
-        ctx.shadowBlur = 20; 
-        ctx.shadowColor = '#00ffff';
-        
-        ctx.drawImage(
-            playerImage,
-            px - playerSize / 2,
-            py - playerSize / 2,
-            playerSize,
-            playerSize
-        );
-        
+        ctx.shadowBlur = selectedOrbId === 0 ? 5 : 20;
+        ctx.shadowColor = selectedOrbColor;
+
+        if (selectedOrbId === 0) {
+            // Draw procedural default neon ring
+            ctx.fillStyle = selectedOrbColor;
+            ctx.beginPath();
+            ctx.arc(px, py, PLAYER_RADIUS, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Inner bright core
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(px, py, PLAYER_RADIUS * 0.45, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Center diamond
+            ctx.fillStyle = '#ccffff';
+            ctx.beginPath();
+            ctx.moveTo(px, py - PLAYER_RADIUS * 0.8);
+            ctx.lineTo(px + PLAYER_RADIUS * 0.6, py);
+            ctx.lineTo(px, py + PLAYER_RADIUS * 0.8);
+            ctx.lineTo(px - PLAYER_RADIUS * 0.6, py);
+            ctx.closePath();
+            ctx.fill();
+        } else {
+            // Draw custom orb
+            const playerSize = PLAYER_RADIUS * 2 * 1.8; 
+            if (customOrbImage && customOrbImage.complete) {
+                ctx.drawImage(
+                    customOrbImage,
+                    px - playerSize / 2,
+                    py - playerSize / 2,
+                    playerSize,
+                    playerSize
+                );
+            }
+        }
         ctx.shadowBlur = 0; // reset
 
         // Trail
         ctx.globalAlpha = 0.25;
-        ctx.fillStyle = '#00ffff';
+        ctx.fillStyle = selectedOrbColor;
         ctx.beginPath();
         ctx.arc(px, py + 8, PLAYER_RADIUS * 0.7, 0, Math.PI * 2);
         ctx.fill();
@@ -917,14 +948,6 @@ function draw() {
         ctx.fill();
         ctx.globalAlpha = 1;
     }
-    ctx.fillStyle = '#ccffff';
-    ctx.beginPath();
-    ctx.moveTo(player.visualX, player.y - PLAYER_RADIUS * 0.8);
-    ctx.lineTo(player.visualX + PLAYER_RADIUS * 0.6, player.y);
-    ctx.lineTo(player.visualX, player.y + PLAYER_RADIUS * 0.8);
-    ctx.lineTo(player.visualX - PLAYER_RADIUS * 0.6, player.y);
-    ctx.closePath();
-    ctx.fill();
 
     
     
