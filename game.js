@@ -978,6 +978,22 @@ function draw() {
         const px = player.visualX;
         const py = player.visualY || player.y;
 
+        // Trail (Drawn behind the player)
+        if (player.history) {
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = selectedOrbColor;
+            for (let i = 0; i < player.history.length; i++) {
+                const pt = player.history[i];
+                const ratio = i / player.history.length;
+                ctx.globalAlpha = ratio * 0.6; // Fades out towards the tail
+                ctx.fillStyle = selectedOrbColor;
+                ctx.beginPath();
+                ctx.arc(pt.x, pt.y, PLAYER_RADIUS * Math.max(0.2, (0.4 + 0.6 * ratio)), 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        ctx.globalAlpha = 1.0;
+
         ctx.shadowBlur = selectedOrbId === 0 ? 15 : 45;
         ctx.shadowColor = selectedOrbColor;
 
@@ -1017,22 +1033,6 @@ function draw() {
             }
         }
         ctx.shadowBlur = 0; // reset
-
-        // Trail
-        if (player.history) {
-            ctx.shadowBlur = 20;
-            ctx.shadowColor = selectedOrbColor;
-            for (let i = 0; i < player.history.length; i++) {
-                const pt = player.history[i];
-                const ratio = i / player.history.length;
-                ctx.globalAlpha = ratio * 0.6; // Fades out towards the tail
-                ctx.fillStyle = selectedOrbColor;
-                ctx.beginPath();
-                ctx.arc(pt.x, pt.y, PLAYER_RADIUS * Math.max(0.2, (0.4 + 0.6 * ratio)), 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
-        ctx.globalAlpha = 1.0;
     }
 
     
