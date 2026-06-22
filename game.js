@@ -657,7 +657,7 @@ function loop(timestamp) {
     player.visualY = player.y - arcHeight;
     player.history = player.history || [];
     player.history.push({x: player.visualX, y: player.visualY});
-    if (player.history.length > 12) player.history.shift();
+    if (player.history.length > 8) player.history.shift();
 
     // Player trail particles
     if (isPlaying) {
@@ -667,9 +667,9 @@ function loop(timestamp) {
                 x: player.visualX + (Math.random() - 0.5) * PLAYER_RADIUS * 1.5,
                 y: player.visualY + (Math.random() - 0.5) * PLAYER_RADIUS * 1.5,
                 vx: (Math.random() - 0.5) * 60,
-                vy: -Math.random() * 300 - 150, // Fly backwards fast
+                vy: Math.random() * 300 + 150, // Fly DOWNWARDS behind the player
                 color: getVaryingColor(selectedOrbColor),
-                life: 0.4 + Math.random() * 0.4
+                life: 0.15 + Math.random() * 0.2
             });
         }
     }
