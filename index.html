@@ -141,7 +141,7 @@
         </div>
 
         <div id="checkout-container" style="display: flex; gap: 20px;">
-            <button id="buy-btn" onclick="processPurchase()" style="background: linear-gradient(45deg, #ffaa00, #ff0055); color: #fff; border: none; padding: 15px 40px; font-size: 24px; font-weight: bold; border-radius: 30px; cursor: pointer; text-transform: uppercase; font-family: 'Courier New', Courier, monospace; box-shadow: 0 0 20px rgba(255,170,0,0.6); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)';" onmouseout="this.style.transform='scale(1)';">
+            <button id="buy-btn" onclick="window.location.href='https://buy.stripe.com/test_5kQ00c2wtfkYcQHgS42wU00'" style="background: linear-gradient(45deg, #ffaa00, #ff0055); color: #fff; border: none; padding: 15px 40px; font-size: 24px; font-weight: bold; border-radius: 30px; cursor: pointer; text-transform: uppercase; font-family: 'Courier New', Courier, monospace; box-shadow: 0 0 20px rgba(255,170,0,0.6); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)';" onmouseout="this.style.transform='scale(1)';">
                 Buy for $1.99
             </button>
             <button onclick="document.getElementById('store-modal').style.display='none';" style="background: transparent; color: #aaa; border: 2px solid #555; padding: 15px 40px; font-size: 24px; font-weight: bold; border-radius: 30px; cursor: pointer; text-transform: uppercase; font-family: 'Courier New', Courier, monospace; transition: all 0.2s;" onmouseover="this.style.color='#fff'; this.style.borderColor='#fff';" onmouseout="this.style.color='#aaa'; this.style.borderColor='#555';">
@@ -158,23 +158,25 @@
     </div>
 
     <script>
-        function processPurchase() {
-            document.getElementById('checkout-container').style.display = 'none';
-            document.getElementById('processing-msg').style.display = 'block';
-            
-            // Simulate 1.5s transaction
-            setTimeout(() => {
-                document.getElementById('processing-msg').style.display = 'none';
-                document.getElementById('success-msg').style.display = 'block';
+        document.addEventListener("DOMContentLoaded", function() {
+            // Check if user just returned from a successful Stripe checkout
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('success') === 'true') {
                 localStorage.setItem('premiumBundleUnlocked', 'true');
+                document.getElementById('store-modal').style.display = 'flex';
+                document.getElementById('checkout-container').style.display = 'none';
+                document.getElementById('success-msg').style.display = 'block';
                 
-                // Auto close after 2 seconds
+                // Remove the query parameter to clean up the URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+                
                 setTimeout(() => {
                     document.getElementById('store-modal').style.display = 'none';
-                    // Reset modal for future opens
                     document.getElementById('checkout-container').style.display = 'flex';
                     document.getElementById('success-msg').style.display = 'none';
-                }, 2000);
+                }, 4000);
+            }
+        });, 2000);
             }, 1500);
         }
     </script>
