@@ -603,6 +603,21 @@ function gameOver() {
     gameOverScreen.classList.remove('hidden');
     finalScoreEl.innerText = Math.floor(score);
     finalComboEl.innerText = maxCombo;
+    
+    const reviveBtn = document.getElementById('revive-btn');
+    if (reviveBtn) {
+        if (revivesLeft > 0) {
+            reviveBtn.innerHTML = `REVIVE (${revivesLeft} Left)`;
+            reviveBtn.onclick = revivePlayer;
+            reviveBtn.style.background = 'linear-gradient(45deg, #00ffaa, #0088ff)';
+            reviveBtn.style.boxShadow = '0 0 20px rgba(0,255,170,0.6)';
+        } else {
+            reviveBtn.innerHTML = 'BUY MORE REVIVES';
+            reviveBtn.onclick = () => window.location.href = 'https://buy.stripe.com/test_revives';
+            reviveBtn.style.background = 'linear-gradient(45deg, #ffaa00, #ff0055)';
+            reviveBtn.style.boxShadow = '0 0 20px rgba(255,170,0,0.6)';
+        }
+    }
 }
 
 function triggerWin() {
