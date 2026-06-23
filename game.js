@@ -1097,7 +1097,7 @@ function draw() {
         }
         ctx.globalAlpha = 1.0;
 
-        ctx.shadowBlur = selectedOrbId === 0 ? 15 : 45;
+        ctx.shadowBlur = selectedOrbId === 0 ? 15 : (selectedOrbId >= 10 ? 80 : 45);
         ctx.shadowColor = selectedOrbColor;
 
         if (selectedOrbId === 0) {
@@ -1124,7 +1124,7 @@ function draw() {
             ctx.fill();
         } else {
             // Draw custom orb
-            const playerSize = PLAYER_RADIUS * 2 * 1.8; 
+            const playerSize = PLAYER_RADIUS * 2 * (selectedOrbId >= 10 ? 2.4 : 1.8); 
             if (customOrbImage && customOrbImage.complete) {
                 const aspect = customOrbImage.width / customOrbImage.height;
                 let drawW = playerSize;
