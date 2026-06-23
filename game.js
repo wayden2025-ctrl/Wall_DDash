@@ -690,13 +690,13 @@ function gameOver() {
     const reviveBtn = document.getElementById('revive-btn');
     if (reviveBtn) {
         if (revivesLeft > 0) {
-            reviveBtn.innerHTML = `REVIVE (${revivesLeft} Left)`;
+            reviveBtn.innerHTML = `REVIVE (${revivesLeft} Left)<br><span style="font-size:14px; color:#eee; font-weight:normal; text-shadow:none; letter-spacing:1px; margin-top:5px; display:block;">Free revives refresh every day!</span>`;
             reviveBtn.onclick = revivePlayer;
             reviveBtn.style.background = 'linear-gradient(45deg, #00ffaa, #0088ff)';
             reviveBtn.style.boxShadow = '0 0 20px rgba(0,255,170,0.6)';
         } else {
-            reviveBtn.innerHTML = 'BUY MORE REVIVES';
-            reviveBtn.onclick = () => window.location.href = 'https://buy.stripe.com/test_revives';
+            reviveBtn.innerHTML = `BUY MORE REVIVES<br><span style="font-size:14px; color:#eee; font-weight:normal; text-shadow:none; letter-spacing:1px; margin-top:5px; display:block;">Or wait until tomorrow for 3 free!</span>`;
+            reviveBtn.onclick = () => document.getElementById('store-modal').style.display = 'flex';
             reviveBtn.style.background = 'linear-gradient(45deg, #ffaa00, #ff0055)';
             reviveBtn.style.boxShadow = '0 0 20px rgba(255,170,0,0.6)';
         }
