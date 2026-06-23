@@ -119,7 +119,7 @@
     </div>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
+                document.addEventListener("DOMContentLoaded", function() {
             if (!localStorage.getItem('cookiesAccepted')) {
                 document.getElementById('cookie-banner').style.display = 'flex';
             }
@@ -127,6 +127,24 @@
                 localStorage.setItem('cookiesAccepted', 'true');
                 document.getElementById('cookie-banner').style.display = 'none';
             });
+            
+            // Handle Stripe redirects
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('success') === 'true') {
+                localStorage.setItem('premiumBundleUnlocked', 'true');
+                document.getElementById('store-modal').style.display = 'flex';
+                const cm = document.getElementById('checkout-container');
+                if(cm) cm.style.display = 'none';
+                const sm = document.getElementById('success-msg');
+                if(sm) sm.style.display = 'block';
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+            if (urlParams.get('revive_success') === 'true') {
+                let currentRevives = parseInt(localStorage.getItem('revivesLeft')) || 0;
+                localStorage.setItem('revivesLeft', (currentRevives + 10).toString());
+                alert("Purchase Successful! 10 Revives have been added to your account.");
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
         });
     </script>
 
