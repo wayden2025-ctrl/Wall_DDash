@@ -111,7 +111,7 @@
         <a href="mailto:wayden2025@gmail.com">Contact Us</a>
     </footer>
 
-    <script src="game.js?v=61"></script>
+    <script src="game.js?v=62"></script>
 
     <div id="cookie-banner" class="cookie-banner">
         <p>We use cookies to personalize content, provide social media features, and analyze our traffic. We also share information about your use of our site with our advertising and analytics partners. <a href="privacy.html">Learn more</a>.</p>
@@ -208,6 +208,11 @@
         const modalHeader = document.getElementById('modal-header');
         const confirmBtn = document.getElementById('confirm-btn');
         let selectedId = parseInt(localStorage.getItem('selectedOrbId') || '0', 10);
+        if (!orbs.find(o => o.id === selectedId)) {
+            selectedId = 0;
+            localStorage.setItem('selectedOrbId', '0');
+            localStorage.setItem('selectedOrbColor', orbs[0].color);
+        }
         
         // Pre-create title elements for cross-fading
         const titleElements = {};
