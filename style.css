@@ -116,6 +116,18 @@ body, html {
     z-index: 20;
 }
 
+#game-over-screen {
+    background: #000;
+}
+
+#game-over-screen .glass-panel {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+}
+
 .glass-panel {
     background: rgba(10, 15, 25, 0.6);
     backdrop-filter: blur(15px);
