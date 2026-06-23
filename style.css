@@ -2,8 +2,8 @@
     --bg-color: #0a0a0c;
     --lane-color: rgba(255, 255, 255, 0.05);
     --lane-divider: rgba(0, 255, 255, 0.3);
-    --player-color: #00ffff;
-    --player-glow: 0 0 15px #00ffff, 0 0 30px #00ffff;
+    --player-color: #ff00ff;
+    --player-glow: 0 0 15px #ff0055, 0 0 30px #0088ff;
     --obstacle-color: #ff0055;
     --obstacle-glow: 0 0 15px #ff0055;
     --text-color: #ffffff;
@@ -132,10 +132,10 @@ body, html {
     background: rgba(10, 15, 25, 0.6);
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
-    border: 1px solid rgba(0, 255, 255, 0.4);
+    border: 1px solid rgba(255, 0, 85, 0.4);
     border-radius: 20px;
     padding: 40px 30px;
-    box-shadow: 0 0 30px rgba(0, 255, 255, 0.15), inset 0 0 20px rgba(0, 255, 255, 0.1);
+    box-shadow: 0 0 30px rgba(0, 136, 255, 0.15), inset 0 0 20px rgba(255, 0, 85, 0.1);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -310,7 +310,7 @@ p {
     font-size: 14px;
 }
 .site-footer a {
-    color: #00ffff;
+    color: #ff0055;
     text-decoration: none;
     transition: color 0.2s;
 }

@@ -78,7 +78,7 @@ window.updateOrbSelection = function(id, color, src) {
 };
 
 let selectedOrbId = parseInt(localStorage.getItem('selectedOrbId') || '0', 10);
-let selectedOrbColor = localStorage.getItem('selectedOrbColor') || '#00ffff';
+let selectedOrbColor = localStorage.getItem('selectedOrbColor') || '#ff00ff';
 
 function getVaryingColor(hex) {
     if (!hex || hex.length !== 7) return hex;
@@ -197,7 +197,7 @@ function reviveLoop(timestamp) {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.shadowBlur = 30;
-    ctx.shadowColor = '#00ffff';
+    ctx.shadowColor = '#ff00ff';
     const num = Math.ceil(reviveTimer);
     if (num > 0) {
         // pulse effect
@@ -247,7 +247,7 @@ let screenShakeIntensity = 0;
 
 // ── Neon Hacker Matrix Rain Initialization ──
 const matrixChars = "0179%#@&?!/\[]{}<>XKRVNZ";
-const matrixColors = ['#00ffff', '#ff00ff', '#8800ff', '#0088ff', '#ff00aa'];
+const matrixColors = ['#ff0055', '#ff00ff', '#8800ff', '#0088ff', '#ff00aa'];
 let matrixStreams = [];
 const NUM_STREAMS = 15; // Reduced matrix streams slightly to balance with shapes
 
@@ -313,7 +313,7 @@ for (let i = 0; i < 30; i++) {
         y: Math.random(),
         speed: 0.05 + Math.random() * 0.1,
         size: 1 + Math.random() * 3,
-        color: Math.random() > 0.5 ? '#00ffff' : '#ff88ff'
+        color: Math.random() > 0.5 ? '#ff0055' : '#0088ff'
     });
 }
 
@@ -356,7 +356,7 @@ function switchLane() {
             y: player.visualY,
             vx: (Math.random() - 0.5) * 300,
             vy: (Math.random() - 0.5) * 300,
-            color: '#00ffff',
+            color: '#0088ff',
             life: 0.4 + Math.random() * 0.3
         });
     }
@@ -619,7 +619,7 @@ function spawnParticles(x, y, color) {
             vx: (Math.random() - 0.5) * 1500,
             vy: (Math.random() - 0.5) * 1500,
             life: 1.5 + Math.random(),
-            color: Math.random() > 0.5 ? '#00ffff' : '#ff00ff'
+            color: Math.random() > 0.5 ? '#ff0055' : '#0088ff'
         });
     }
 }
@@ -681,7 +681,7 @@ function gameOver() {
     playHit();
     container.classList.add('shake');
     setTimeout(() => container.classList.remove('shake'), 300);
-    spawnParticles(player.visualX, player.y, '#00ffff');
+    spawnParticles(player.visualX, player.y, '#ff00ff');
 
     gameOverScreen.classList.remove('hidden');
     finalScoreEl.innerText = Math.floor(score);
@@ -802,7 +802,7 @@ function loop(timestamp) {
             y: Math.random() * canvas.height,
             vx: (wallX === WALL_WIDTH ? 1 : -1) * (Math.random() * 100),
             vy: (Math.random() - 0.5) * 200,
-            color: '#00ffff',
+            color: '#0088ff',
             life: 0.4 + Math.random() * 0.3
         });
     }
@@ -1151,7 +1151,7 @@ function draw() {
 
     // ── Draw Particles ────────────────────────────
     particles.forEach(p => {
-        ctx.fillStyle = p.color || '#00ffff';
+        ctx.fillStyle = p.color || '#ff00ff';
         ctx.globalAlpha = p.life !== undefined ? Math.max(0, p.life) : 1;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
@@ -1195,7 +1195,7 @@ function drawHUD(w, h) {
 
     // Main score text
     ctx.shadowBlur = 5;
-    ctx.shadowColor = '#00ffff';
+    ctx.shadowColor = '#ff00ff';
     ctx.fillStyle = '#ffffff';
     ctx.fillText(scoreStr, cx, 60);
     
@@ -1258,7 +1258,7 @@ function drawHUD(w, h) {
         const multStr = `x${mult}`;
         ctx.font = 'bold 28px "Courier New", monospace';
         
-        ctx.shadowColor = '#00ffff';
+        ctx.shadowColor = '#ff00ff';
 
         // Pulse alpha with time
         const pulse = 0.7 + 0.3 * Math.sin(performance.now() * 0.008);
@@ -1274,7 +1274,7 @@ function drawHUD(w, h) {
         ctx.textAlign = 'left';
         ctx.fillText('COMBO', WALL_WIDTH + 8, 30);
         ctx.font = 'bold 22px "Courier New", monospace';
-        ctx.fillStyle = '#00ffff';
+        ctx.fillStyle = '#ff00ff';
         ctx.fillText(String(combo), WALL_WIDTH + 8, 54);
     }
 
