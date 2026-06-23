@@ -1,49 +1,48 @@
 
 // --- Audio System ---
-const playlist = [
+let playlist = [
     'monume-synthwave-retro-80s-498055.m4a',
     'monume-cyberpunk-547930.m4a',
     'delosound-inspiring-motivation-synthwave-398285.m4a',
     'the_mountain-electronic-retrowave-132335.m4a'
 ];
 
+// Shuffle the playlist once on load
+for (let i = playlist.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [playlist[i], playlist[j]] = [playlist[j], playlist[i]];
+}
+
 let bgMusic = new Audio();
 bgMusic.volume = 0.5;
+let currentTrackIndex = 0;
 
 function playNextTrack() {
-    // Load the current track index from local storage (defaults to 0)
-    let trackIndex = parseInt(localStorage.getItem('wallDashMusicIndex') || '0', 10);
-    
-    // Failsafe if index is out of bounds
-    if (trackIndex >= playlist.length || isNaN(trackIndex)) {
-        trackIndex = 0;
-    }
-    
-    bgMusic.src = playlist[trackIndex];
+    bgMusic.src = playlist[currentTrackIndex];
     bgMusic.play().catch(e => console.log("Audio play blocked by browser:", e));
     
-    // Save the next track index for when the song finishes OR the user restarts the game
-    let nextIndex = (trackIndex + 1) % playlist.length;
-    localStorage.setItem('wallDashMusicIndex', nextIndex);
+    // Cycle to next song in the shuffled playlist
+    currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
 }
 
 bgMusic.addEventListener('ended', () => {
-    // 5 seconds delay before next song
-    setTimeout(playNextTrack, 5000);
+    // 3 seconds delay before next song
+    setTimeout(playNextTrack, 3000);
 });
 
 let audioStarted = false;
 function initAudio() {
-    if (!audioStarted) {
+    if (!audioStarted && isPlaying) {
         audioStarted = true;
         playNextTrack();
     }
 }
 
-// Add interaction listener to start audio as soon as possible due to browser policies
-window.addEventListener('click', initAudio, { once: true });
-window.addEventListener('keydown', initAudio, { once: true });
-window.addEventListener('touchstart', initAudio, { once: true });
+// Add interaction listeners but only start if game is playing
+window.addEventListener('click', initAudio);
+window.addEventListener('keydown', initAudio);
+window.addEventListener('touchstart', initAudio);
+
 
 const canvas = document.getElementById('game-canvas');
 const ctx = canvas.getContext('2d');
@@ -645,6 +644,7 @@ function updateUI() {
 //  GAME LIFECYCLE
 // ════════════════════════════════════════════════════════════════
 function startGame() {
+    initAudio();
     isPlaying = true;
     score = 0;
     combo = 0;
@@ -1292,3 +1292,5 @@ document.addEventListener('visibilitychange', () => {
         triggerGameOver();
     }
 });
+
+window.addEventListener('beforeunload', () => { bgMusic.pause(); });
