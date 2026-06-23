@@ -166,7 +166,7 @@ button {
     color: var(--bg-color);
     background-color: var(--player-color);
     border: none;
-    border-radius: 5px;
+    border-radius: 30px;
     cursor: pointer;
     box-shadow: var(--player-glow);
     transition: transform 0.1s, background-color 0.2s;

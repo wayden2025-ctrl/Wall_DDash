@@ -135,6 +135,89 @@ let currentSpeed = 400;
 let timeScale = 1;
 let lastTime = 0;
 
+let revivesLeft = 3;
+let isReviving = false;
+let reviveTimer = 0;
+
+function initRevives() {
+    const today = new Date().toDateString();
+    const lastReviveDate = localStorage.getItem('lastReviveDate');
+    let savedRevives = parseInt(localStorage.getItem('revivesLeft'));
+    if (isNaN(savedRevives)) savedRevives = 3;
+    
+    if (lastReviveDate !== today) {
+        if (savedRevives < 3) savedRevives = 3;
+        localStorage.setItem('lastReviveDate', today);
+        localStorage.setItem('revivesLeft', savedRevives.toString());
+    }
+    
+    revivesLeft = savedRevives;
+}
+
+initRevives();
+
+function revivePlayer() {
+    if (revivesLeft <= 0) return;
+    
+    revivesLeft--;
+    localStorage.setItem('revivesLeft', revivesLeft.toString());
+    
+    gameOverScreen.classList.add('hidden');
+    
+    // Clear obstacles around the player
+    for (let i = obstacles.length - 1; i >= 0; i--) {
+        const obs = obstacles[i];
+        if (Math.abs(obs.y - player.y) < 800) {
+            obstacles.splice(i, 1);
+        }
+    }
+    
+    isReviving = true;
+    reviveTimer = 3.2; // slight buffer
+    
+    lastTime = performance.now();
+    requestAnimationFrame(reviveLoop);
+}
+
+function reviveLoop(timestamp) {
+    if (!isReviving) return;
+    
+    let rawDt = (timestamp - lastTime) / 1000;
+    if (rawDt > 0.1) rawDt = 0.1;
+    lastTime = timestamp;
+    
+    reviveTimer -= rawDt;
+    
+    draw(); // Redraw game state
+    
+    // Draw countdown
+    ctx.save();
+    ctx.fillStyle = `rgba(0, 255, 255, 1)`;
+    ctx.font = 'bold 150px Courier New';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.shadowBlur = 30;
+    ctx.shadowColor = '#00ffff';
+    const num = Math.ceil(reviveTimer);
+    if (num > 0) {
+        // pulse effect
+        const scale = 1 + (num - reviveTimer);
+        ctx.translate(canvas.width/2, canvas.height/2);
+        ctx.scale(scale, scale);
+        ctx.fillText(num, 0, 0);
+    }
+    ctx.restore();
+    
+    if (reviveTimer <= 0) {
+        isReviving = false;
+        isPlaying = true;
+        lastTime = performance.now();
+        requestAnimationFrame(loop);
+    } else {
+        requestAnimationFrame(reviveLoop);
+    }
+}
+
 // ─── Player ────────────────────────────────────────────────────
 const player = {
     lane: 0,     // 0 = left wall, 1 = right wall
