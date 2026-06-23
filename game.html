@@ -111,7 +111,7 @@
         <a href="mailto:wayden2025@gmail.com">Contact Us</a>
     </footer>
 
-    <script src="game.js?v=65"></script>
+    <script src="game.js?v=66"></script>
 
     <div id="cookie-banner" class="cookie-banner">
         <p>We use cookies to personalize content, provide social media features, and analyze our traffic. We also share information about your use of our site with our advertising and analytics partners. <a href="privacy.html">Learn more</a>.</p>
@@ -188,7 +188,7 @@
         { id: 9, name: 'Platinum Star', color: '#ffffff', src: 'orb_9.png', titleSrc: 'title_9.png' },
     ];
 
-    if (localStorage.getItem('premiumBundleUnlocked') === 'true') {
+    if (true || localStorage.getItem('premiumBundleUnlocked') === 'true') { // TEST OVERRIDE
         orbs.push(
             { id: 10, name: 'Elite Sapphire Core', color: '#00aaff', src: 'premium_orb_10.png', titleSrc: 'title_10.png' },
             { id: 11, name: 'Elite Ruby Core', color: '#ff2200', src: 'premium_orb_11.png', titleSrc: 'title_11.png' },
