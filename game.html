@@ -139,10 +139,21 @@
                 if(sm) sm.style.display = 'block';
                 window.history.replaceState({}, document.title, window.location.pathname);
             }
-            if (urlParams.get('revive_success') === 'true') {
+            const reviveSuccess = urlParams.get('revive_success');
+            if (reviveSuccess) {
                 let currentRevives = parseInt(localStorage.getItem('revivesLeft')) || 0;
-                localStorage.setItem('revivesLeft', (currentRevives + 10).toString());
-                alert("Purchase Successful! 10 Revives have been added to your account.");
+                const count = parseInt(reviveSuccess);
+                if (!isNaN(count)) {
+                    localStorage.setItem('revivesLeft', (currentRevives + count).toString());
+                    document.getElementById('store-modal').style.display = 'flex';
+                    const cm = document.getElementById('checkout-container');
+                    if(cm) cm.style.display = 'none';
+                    const sm = document.getElementById('success-msg');
+                    if(sm) {
+                        sm.innerHTML = `PURCHASE SUCCESSFUL!<br><span style="font-size: 18px; color: #ccc;">+${count} Revives added to your account! Close the store to resume playing.</span>`;
+                        sm.style.display = 'block';
+                    }
+                }
                 window.history.replaceState({}, document.title, window.location.pathname);
             }
         });
