@@ -1502,6 +1502,12 @@ function drawHUD(w, h) {
 
     // ── Score: big centred number ──────
     ctx.save();
+    
+    // Counter-rotate the entire HUD so it stays upright when the canvas spins
+    ctx.translate(cx, h / 2);
+    ctx.rotate(-angleDeg * (Math.PI / 180));
+    ctx.translate(-cx, -h / 2);
+    
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
