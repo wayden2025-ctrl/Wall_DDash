@@ -121,7 +121,7 @@ const publisherContent = document.getElementById('publisher-content');
 const WALL_WIDTH = 6;          // thickness of each white wall
 const SPIKE_BASE = 30;         // spike height along the wall (vertical size)
 const SPIKE_DEPTH = 50;        // how far the spike juts inward
-const PLAYER_RADIUS = 15;      // player is a small circle on the wall
+const PLAYER_RADIUS = 18;      // player is a small circle on the wall
 
 // ─── Game State ────────────────────────────────────────────────
 let isPlaying = false;
@@ -243,6 +243,7 @@ const PERFECT_DIST = 35;
 let scrollOffset = 0;
 let screenShakeTime = 0;
 let screenShakeIntensity = 0;
+let freezeTime = 0;
 
 // ── Neon Hacker Matrix Rain Initialization ──
 const matrixChars = "0179%#@&?!/\[]{}<>XKRVNZ";
@@ -611,14 +612,33 @@ function triggerPerfect() {
 // ════════════════════════════════════════════════════════════════
 //  PARTICLES
 // ════════════════════════════════════════════════════════════════
-function spawnParticles(x, y, color) {
-    for (let i = 0; i < 60; i++) {
-        particles.push({ size: 2 + Math.random()*3,
-            x, y,
-            vx: (Math.random() - 0.5) * 1500,
-            vy: (Math.random() - 0.5) * 1500,
-            life: 1.5 + Math.random(),
-            color: Math.random() > 0.5 ? '#ff0055' : '#0088ff'
+function spawnShatterParticles(x, y, color) {
+    for (let i = 0; i < 50; i++) {
+        particles.push({ 
+            size: 4 + Math.random() * 8,
+            x: x, 
+            y: y,
+            vx: (Math.random() - 0.5) * 1200,
+            vy: (Math.random() - 0.5) * 1200 - 400,
+            life: 2.0 + Math.random(),
+            color: color || selectedOrbColor,
+            isShatter: true,
+            angle: Math.random() * Math.PI * 2,
+            vAngle: (Math.random() - 0.5) * 15
+        });
+    }
+}
+function spawnImpactEmbers(x, y, dir) {
+    for (let i = 0; i < 15; i++) {
+        particles.push({
+            size: 2 + Math.random() * 4,
+            x: x,
+            y: y,
+            vx: dir * (200 + Math.random() * 400),
+            vy: (Math.random() - 0.5) * 600,
+            life: 0.3 + Math.random() * 0.3,
+            color: '#fff',
+            isEmber: true
         });
     }
 }
@@ -679,9 +699,10 @@ function restartGame() { startGame(); }
 function gameOver() {
     isPlaying = false;
     playHit();
-    container.classList.add('shake');
-    setTimeout(() => container.classList.remove('shake'), 300);
-    spawnParticles(player.visualX, player.y, '#ff00ff');
+    freezeTime = 0.15; // Hit stop for 150ms
+    screenShakeTime = 0.6; // Massive shake duration
+    screenShakeIntensity = 30; // Massive shake magnitude
+    spawnShatterParticles(player.visualX, player.y, selectedOrbColor);
 
     gameOverScreen.classList.remove('hidden');
     finalScoreEl.innerText = Math.floor(score);
@@ -720,11 +741,44 @@ function triggerWin() {
 //  MAIN LOOP
 // ════════════════════════════════════════════════════════════════
 function loop(timestamp) {
-    if (!isPlaying) return;
+    if (!isPlaying && freezeTime <= 0) return;
 
     let rawDt = (timestamp - lastTime) / 1000;
     // Cap max delta time to 0.1s to prevent huge skips if the game lags or resumes
     if (rawDt > 0.1) rawDt = 0.1;
+    
+    lastTime = timestamp;
+    
+    // Hit stop logic
+    if (freezeTime > 0) {
+        freezeTime -= rawDt;
+        draw();
+        if (freezeTime > 0) {
+            requestAnimationFrame(loop);
+            return;
+        } else {
+            // Once freeze ends, if not playing, we show game over UI
+            if (!isPlaying) {
+                gameOverScreen.classList.remove('hidden');
+                finalScoreEl.innerText = Math.floor(score);
+                finalComboEl.innerText = maxCombo;
+                const reviveBtn = document.getElementById('revive-btn');
+                if (reviveBtn) {
+                    if (revivesLeft > 0) {
+                        reviveBtn.innerHTML = `<img src="btn_revive.png" style="width: 100%; max-width: 400px; object-fit: contain;">`;
+                        reviveBtn.onclick = revivePlayer;
+                    } else {
+                        reviveBtn.innerHTML = `<img src="btn_revive.png" style="width: 100%; max-width: 400px; object-fit: contain; filter: grayscale(100%);">`;
+                        reviveBtn.onclick = () => document.getElementById('store-modal').style.display = 'flex';
+                    }
+                }
+            }
+            // Need to reset lastTime so we don't get a huge jump after freeze
+            lastTime = performance.now();
+            requestAnimationFrame(loop);
+            return;
+        }
+    }
     
     lastTime = timestamp;
     const dt = rawDt * timeScale;
@@ -749,6 +803,19 @@ function loop(timestamp) {
     
     // Calculate distance to target to create a subtle vertical "arc" (slant) during dash
     const distToTarget = Math.abs(player.targetX - player.visualX);
+    
+    // Impact Embers and Micro Shake on landing
+    if (distToTarget > 10) {
+        player.isDashing = true;
+    } else if (player.isDashing && distToTarget <= 10) {
+        player.isDashing = false;
+        // Minor hit stop and screen shake on dash landing
+        screenShakeTime = 0.1;
+        screenShakeIntensity = 5;
+        // Determine direction of embers (away from wall)
+        const dir = player.lane === 0 ? 1 : -1; 
+        spawnImpactEmbers(player.visualX, player.visualY, dir);
+    }
     const maxDist = canvas.width - (WALL_WIDTH * 2) - (PLAYER_RADIUS * 2);
     // Subtle Y bump: max 12px up in the middle of the dash
     const arcHeight = 12 * Math.sin(Math.PI * (1 - (distToTarget / maxDist)));
@@ -876,11 +943,25 @@ function loop(timestamp) {
     }
 
 
-    // Update active particles (trail, sparks, ambient)
+    // Update active particles (trail, sparks, ambient, shatter, embers)
     for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i];
         p.x += p.vx * dt;
         p.y += p.vy * dt;
+        
+        if (p.isShatter) {
+            p.vy += 3000 * dt; // Gravity
+            p.angle += p.vAngle * dt;
+            // Bounce off walls
+            if (p.x < WALL_WIDTH) {
+                p.x = WALL_WIDTH;
+                p.vx *= -0.6;
+            } else if (p.x > canvas.width - WALL_WIDTH) {
+                p.x = canvas.width - WALL_WIDTH;
+                p.vx *= -0.6;
+            }
+        }
+
         if (p.life !== undefined) {
             p.life -= dt;
             if (p.life <= 0) particles.splice(i, 1);
@@ -1151,11 +1232,37 @@ function draw() {
 
     // ── Draw Particles ────────────────────────────
     particles.forEach(p => {
-        ctx.fillStyle = p.color || '#ff00ff';
-        ctx.globalAlpha = p.life !== undefined ? Math.max(0, p.life) : 1;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.globalAlpha = p.life !== undefined ? Math.max(0, Math.min(1, p.life)) : 1;
+        
+        if (p.isShatter) {
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate(p.angle || 0);
+            ctx.fillStyle = p.color;
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = p.color;
+            ctx.beginPath();
+            ctx.moveTo(0, -p.size);
+            ctx.lineTo(p.size * 0.8, p.size);
+            ctx.lineTo(-p.size * 0.8, p.size);
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+        } else if (p.isEmber) {
+            ctx.save();
+            ctx.fillStyle = '#ffffff';
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        } else {
+            ctx.fillStyle = p.color || '#ff00ff';
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            ctx.fill();
+        }
     });
     ctx.globalAlpha = 1.0;
 
