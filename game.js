@@ -329,7 +329,7 @@ for (let i = 0; i < 30; i++) {
 function resize() {
     canvas.width  = container.clientWidth;
     canvas.height = container.clientHeight;
-    player.y = canvas.height - 120;
+    player.y = canvas.height - 220;
     setPlayerX(true);
 }
 window.addEventListener('resize', resize);
