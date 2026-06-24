@@ -1,3 +1,4 @@
+let gameW = 1000, gameH = 800, offsetX = 0, offsetY = 0;
 
 // --- Audio System ---
 let playlist = [
@@ -205,7 +206,7 @@ function reviveLoop(timestamp) {
     if (num > 0) {
         // pulse effect
         const scale = 1 + (num - reviveTimer);
-        ctx.translate(canvas.width/2, canvas.height/2);
+        ctx.translate(gameW/2, gameH/2);
         ctx.scale(scale, scale);
         ctx.fillText(num, 0, 0);
     }
@@ -327,9 +328,17 @@ for (let i = 0; i < 30; i++) {
 //  RESIZE
 // ════════════════════════════════════════════════════════════════
 function resize() {
-    canvas.width  = container.clientWidth;
-    canvas.height = container.clientHeight;
-    player.y = canvas.height - 220;
+    gameW = container.clientWidth;
+    gameH = container.clientHeight;
+    const size = Math.max(window.innerWidth, window.innerHeight) * 2;
+    canvas.width = size;
+    canvas.height = size;
+    offsetX = (size - gameW) / 2;
+    offsetY = (size - gameH) / 2;
+    canvas.style.position = "absolute";
+    canvas.style.left = `-${offsetX}px`;
+    canvas.style.top = `-${offsetY}px`;
+    player.y = gameH - 220;
     setPlayerX(true);
 }
 window.addEventListener('resize', resize);
@@ -338,7 +347,7 @@ function setPlayerX(instant) {
     if (player.lane === 0) {
         player.targetX = WALL_WIDTH + PLAYER_RADIUS + 2;
     } else {
-        player.targetX = canvas.width - WALL_WIDTH - PLAYER_RADIUS - 2;
+        player.targetX = gameW - WALL_WIDTH - PLAYER_RADIUS - 2;
     }
     if (instant) player.visualX = player.targetX;
 }
@@ -533,7 +542,7 @@ function spikeVerts(ob) {
         return [x0, y0, x1, y1, x2, y2];
     } else {
         // Right wall spike: triangle pointing LEFT
-        const baseX = canvas.width - WALL_WIDTH;
+        const baseX = gameW - WALL_WIDTH;
         const x0 = baseX;
         const y0 = ob.y;
         const x1 = baseX;
@@ -628,7 +637,7 @@ function triggerPerfect() {
             if (p.life <= 0) particles.splice(i, 1);
         } else {
             // Fallback for particles without life (if any)
-            if (p.y > canvas.height + 50 || p.y < -50 || p.x < -50 || p.x > canvas.width + 50) {
+            if (p.y > gameH + 50 || p.y < -50 || p.x < -50 || p.x > gameW + 50) {
                 particles.splice(i, 1);
             }
         }
@@ -839,7 +848,7 @@ function loop(timestamp) {
             const dir = player.lane === 0 ? 1 : -1; 
             spawnImpactEmbers(player.visualX, player.visualY, dir);
         }
-        const maxDist = canvas.width - (WALL_WIDTH * 2) - (PLAYER_RADIUS * 2);
+        const maxDist = gameW - (WALL_WIDTH * 2) - (PLAYER_RADIUS * 2);
         // Subtle Y bump: max 12px up in the middle of the dash
         const arcHeight = 12 * Math.sin(Math.PI * (1 - (distToTarget / maxDist)));
         player.visualY = player.y - arcHeight;
@@ -872,8 +881,8 @@ function loop(timestamp) {
         // Ambient environment particles (dust, sparks, light motes)
         if (Math.random() < 0.8) {
             particles.push({ size: 2 + Math.random()*3,
-                x: Math.random() * canvas.width,
-                y: canvas.height + 20, // start slightly offscreen bottom
+                x: Math.random() * gameW,
+                y: gameH + 20, // start slightly offscreen bottom
                 vx: (Math.random() - 0.5) * 20,
                 vy: -currentSpeed * (0.1 + Math.random() * 0.2), // float up slowly relative to speed
                 color: Math.random() > 0.5 ? 'rgba(0, 255, 255, 0.4)' : 'rgba(255, 0, 255, 0.4)',
@@ -884,10 +893,10 @@ function loop(timestamp) {
 
         // Wall electric sparks
         if (Math.random() < 0.2) {
-            const wallX = Math.random() > 0.5 ? WALL_WIDTH : canvas.width - WALL_WIDTH;
+            const wallX = Math.random() > 0.5 ? WALL_WIDTH : gameW - WALL_WIDTH;
             particles.push({ size: 2 + Math.random()*3,
                 x: wallX,
-                y: Math.random() * canvas.height,
+                y: Math.random() * gameH,
                 vx: (wallX === WALL_WIDTH ? 1 : -1) * (Math.random() * 100),
                 vy: (Math.random() - 0.5) * 200,
                 color: '#0088ff',
@@ -908,7 +917,7 @@ function loop(timestamp) {
             if (ob.lane === player.lane) {
                 if (ob.type === 'spiral') {
                     // Simple circle collision
-                    const obX = ob.lane === 0 ? WALL_WIDTH + ob.radius + 15 : canvas.width - WALL_WIDTH - ob.radius - 15;
+                    const obX = ob.lane === 0 ? WALL_WIDTH + ob.radius + 15 : gameW - WALL_WIDTH - ob.radius - 15;
                     const obY = ob.y;
                     const dx = player.visualX - obX;
                     const dy = player.y - obY;
@@ -948,15 +957,15 @@ function loop(timestamp) {
             }
 
             // Remove offscreen
-            if (ob.y > canvas.height + 50) obstacles.splice(i, 1);
+            if (ob.y > gameH + 50) obstacles.splice(i, 1);
         }
     } // end if (isPlaying)
 
     // Update Shapes
     bgObjects.forEach(bg => {
         bg.y += currentSpeed * dt * bg.speed * 0.001;
-        if (bg.y * canvas.height > canvas.height + bg.height + 50) {
-            bg.y = -(bg.height + 50) / canvas.height;
+        if (bg.y * gameH > gameH + bg.height + 50) {
+            bg.y = -(bg.height + 50) / gameH;
             bg.x = Math.random();
             if (bg.layer === 2) {
                 bg.width = 100 + Math.random() * 200;
@@ -984,7 +993,7 @@ function loop(timestamp) {
         }
 
         // If head is completely off screen bottom (approximate length via fontSize assumption)
-        const approxStreamHeight = (stream.length * 20) / canvas.height; 
+        const approxStreamHeight = (stream.length * 20) / gameH; 
         if (stream.y - approxStreamHeight > 1.0) {
             // Respawn
             Object.assign(stream, createMatrixStream(false));
@@ -1025,8 +1034,8 @@ function loop(timestamp) {
             if (p.x < WALL_WIDTH) {
                 p.x = WALL_WIDTH;
                 p.vx *= -0.6;
-            } else if (p.x > canvas.width - WALL_WIDTH) {
-                p.x = canvas.width - WALL_WIDTH;
+            } else if (p.x > gameW - WALL_WIDTH) {
+                p.x = gameW - WALL_WIDTH;
                 p.vx *= -0.6;
             }
         }
@@ -1036,7 +1045,7 @@ function loop(timestamp) {
             if (p.life <= 0) particles.splice(i, 1);
         } else {
             // Fallback for particles without life (if any)
-            if (p.y > canvas.height + 50 || p.y < -50 || p.x < -50 || p.x > canvas.width + 50) {
+            if (p.y > gameH + 50 || p.y < -50 || p.x < -50 || p.x > gameW + 50) {
                 particles.splice(i, 1);
             }
         }
@@ -1053,8 +1062,11 @@ function loop(timestamp) {
 //  DRAW
 // ════════════════════════════════════════════════════════════════
 function draw() {
-    const w = canvas.width;
-    const h = canvas.height;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.save();
+    ctx.translate(offsetX, offsetY);
+    const w = gameW;
+    const h = gameH;
 
     ctx.save();
     
@@ -1070,7 +1082,7 @@ function draw() {
     bgGrad.addColorStop(0, '#0b001a'); // deep dark violet top
     bgGrad.addColorStop(1, '#1a0033'); // slightly brighter magenta-purple bottom
     ctx.fillStyle = bgGrad;
-    ctx.fillRect(0, 0, w, h);
+    ctx.fillRect(-offsetX, -offsetY, canvas.width, canvas.height);
 
     // ── Background Shapes ──
     bgObjects.forEach(bg => {
@@ -1160,17 +1172,17 @@ function draw() {
     ctx.fillStyle = wallColor; 
     
     // Left Wall Body
-    ctx.fillRect(0, 0, WALL_WIDTH, h);
+    ctx.fillRect(-offsetX, -offsetY, WALL_WIDTH + offsetX, canvas.height);
     // Right Wall Body
-    ctx.fillRect(w - WALL_WIDTH, 0, WALL_WIDTH, h);
+    ctx.fillRect(gameW - WALL_WIDTH, -offsetY, WALL_WIDTH + offsetX, canvas.height);
 
     // Wall texture/paneling (subtle grid/lines)
     ctx.strokeStyle = 'rgba(80, 0, 150, 0.2)';
     ctx.lineWidth = 1;
-    for (let i = 0; i < h; i += 40) {
-        let yShift = (i + scrollOffset) % h;
-        ctx.strokeRect(0, yShift, WALL_WIDTH, 20);
-        ctx.strokeRect(w - WALL_WIDTH, yShift, WALL_WIDTH, 20);
+    for (let i = -offsetY; i < h + offsetY; i += 40) {
+        let yShift = ((i + scrollOffset) % 40) + i - (i%40); // Need continuous grid!
+        ctx.strokeRect(-offsetX, yShift, WALL_WIDTH + offsetX, 20);
+        ctx.strokeRect(w - WALL_WIDTH, yShift, WALL_WIDTH + offsetX, 20);
     }
 
     // Glowing inner edge trim (Hot Pink / Magenta)
@@ -1178,13 +1190,13 @@ function draw() {
     ctx.lineWidth = 4;
 
     ctx.beginPath();
-    ctx.moveTo(WALL_WIDTH, 0);
-    ctx.lineTo(WALL_WIDTH, h);
+    ctx.moveTo(WALL_WIDTH, -offsetY);
+    ctx.lineTo(WALL_WIDTH, h + offsetY);
     ctx.stroke();
 
     ctx.beginPath();
-    ctx.moveTo(w - WALL_WIDTH, 0);
-    ctx.lineTo(w - WALL_WIDTH, h);
+    ctx.moveTo(w - WALL_WIDTH, -offsetY);
+    ctx.lineTo(w - WALL_WIDTH, h + offsetY);
     ctx.stroke();
     
     // Add white hot edge highlight
@@ -1192,12 +1204,12 @@ function draw() {
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(WALL_WIDTH, 0);
-    ctx.lineTo(WALL_WIDTH, h);
+    ctx.moveTo(WALL_WIDTH, -offsetY);
+    ctx.lineTo(WALL_WIDTH, h + offsetY);
     ctx.stroke();
     ctx.beginPath();
-    ctx.moveTo(w - WALL_WIDTH, 0);
-    ctx.lineTo(w - WALL_WIDTH, h);
+    ctx.moveTo(w - WALL_WIDTH, -offsetY);
+    ctx.lineTo(w - WALL_WIDTH, h + offsetY);
     ctx.stroke();
     
 
