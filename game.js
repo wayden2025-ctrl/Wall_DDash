@@ -243,6 +243,7 @@ const PERFECT_DIST = 35;
 let scrollOffset = 0;
 let screenShakeTime = 0;
 let screenShakeIntensity = 0;
+let screenSpinTimer = 0; // The Corrupted Spiral mechanic
 let freezeTime = 0;
 
 // ── Neon Hacker Matrix Rain Initialization ──
@@ -444,14 +445,29 @@ function spawnObstacle() {
     const spikeHeight = variant.height * randomScale;
     const spikeDepth = variant.width * randomScale;
 
-    obstacles.push({
-        lane,
-        y: yPos,
-        height: spikeHeight,
-        depth: spikeDepth,
-        variant: variant,
-        passed: false
-    });
+    const isSpiral = Math.random() < 0.15; // 15% chance to spawn a spiral
+    
+    if (isSpiral) {
+        // Floating slightly off the wall, radius ~30
+        obstacles.push({
+            type: 'spiral',
+            lane,
+            y: yPos,
+            radius: 30,
+            rotation: 0, // Used for drawing animation
+            passed: false
+        });
+    } else {
+        obstacles.push({
+            type: 'spike',
+            lane,
+            y: yPos,
+            height: spikeHeight,
+            depth: spikeDepth,
+            variant: variant,
+            passed: false
+        });
+    }
 
     // Determine the lane for the NEXT spike
     // Use true 50/50 randomness for the lane to avoid repetitive "grouping" patterns
@@ -863,10 +879,45 @@ function loop(timestamp) {
         for (let i = obstacles.length - 1; i >= 0; i--) {
             const ob = obstacles[i];
             ob.y += currentSpeed * dt;
+            
+            if (ob.type === 'spiral') {
+                ob.rotation += 5 * dt; // Hypnotic spin animation speed
+            }
 
             // Collision
-            if (ob.lane === player.lane && playerHitsSpike(ob)) {
-                gameOver();
+            if (ob.lane === player.lane) {
+                if (ob.type === 'spiral') {
+                    // Simple circle collision
+                    const obX = ob.lane === 0 ? WALL_WIDTH + ob.radius + 15 : canvas.width - WALL_WIDTH - ob.radius - 15;
+                    const obY = ob.y;
+                    const dx = player.visualX - obX;
+                    const dy = player.y - obY;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    
+                    if (dist < (PLAYER_RADIUS + ob.radius)) {
+                        // Hit Spiral!
+                        obstacles.splice(i, 1);
+                        screenSpinTimer = 5.0; // 5 seconds of spin
+                        playTone(300, 0.3, 'sawtooth', 0.5); // Glitch sound
+                        score += 100; // Bonus points for risk
+                        
+                        // Spawn glitch particles
+                        for (let j = 0; j < 30; j++) {
+                            particles.push({
+                                size: 2 + Math.random() * 4,
+                                x: obX,
+                                y: obY,
+                                vx: (Math.random() - 0.5) * 800,
+                                vy: (Math.random() - 0.5) * 800,
+                                life: 1.0,
+                                color: '#ff0055' // Red glitch
+                            });
+                        }
+                        continue;
+                    }
+                } else if (playerHitsSpike(ob)) {
+                    gameOver();
+                }
             }
 
             // Passed
@@ -923,6 +974,20 @@ function loop(timestamp) {
     // Screen Shake
     if (screenShakeTime > 0) {
         screenShakeTime -= dt;
+    }
+
+    // Screen Spin Mechanic (Corrupted Spiral)
+    if (screenSpinTimer > 0) {
+        screenSpinTimer -= rawDt; // independent of timeScale
+        if (screenSpinTimer <= 0) {
+            screenSpinTimer = 0;
+            canvas.style.transform = 'none';
+        } else {
+            // Spin exactly 2 full rotations (720 degrees) over 5 seconds
+            const progress = 1.0 - (screenSpinTimer / 5.0);
+            const angle = progress * 720;
+            canvas.style.transform = `rotate(${angle}deg)`;
+        }
     }
 
     // Scroll offset for perspective grid
@@ -1124,18 +1189,59 @@ function draw() {
         
         ctx.save();
         
-        // Spike bloom removed for performance
-        
-        if (ob.lane === 0) {
-            // Left wall
-            ctx.translate(WALL_WIDTH, ob.y);
-            // Flip so the base is on the left
-            ctx.scale(-1, 1);
-            ctx.drawImage(ob.variant.img, -ob.depth, 0, ob.depth, ob.height);
+        if (ob.type === 'spiral') {
+            const obX = ob.lane === 0 ? WALL_WIDTH + ob.radius + 15 : w - WALL_WIDTH - ob.radius - 15;
+            ctx.translate(obX, ob.y);
+            ctx.rotate(ob.rotation);
+            
+            // Draw a spinning red spiral
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = '#ff0055';
+            ctx.strokeStyle = '#ff0055';
+            ctx.lineWidth = 4;
+            
+            ctx.beginPath();
+            // Draw a spiral using polar coordinates
+            for (let i = 0; i < Math.PI * 6; i += 0.2) { // 3 full coils
+                const r = (i / (Math.PI * 6)) * ob.radius;
+                const sx = Math.cos(i) * r;
+                const sy = Math.sin(i) * r;
+                if (i === 0) ctx.moveTo(sx, sy);
+                else ctx.lineTo(sx, sy);
+            }
+            ctx.stroke();
+            
+            // Draw a secondary inverted coil for a cooler effect
+            ctx.beginPath();
+            for (let i = 0; i < Math.PI * 6; i += 0.2) {
+                const r = (i / (Math.PI * 6)) * ob.radius;
+                const sx = Math.cos(i + Math.PI) * r;
+                const sy = Math.sin(i + Math.PI) * r;
+                if (i === 0) ctx.moveTo(sx, sy);
+                else ctx.lineTo(sx, sy);
+            }
+            ctx.stroke();
+            
+            // Inner core
+            ctx.fillStyle = '#ffffff';
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(0, 0, ob.radius * 0.25, 0, Math.PI * 2);
+            ctx.fill();
+            
         } else {
-            // Right wall
-            ctx.translate(w - WALL_WIDTH - ob.depth, ob.y);
-            ctx.drawImage(ob.variant.img, 0, 0, ob.depth, ob.height);
+            if (ob.lane === 0) {
+                // Left wall
+                ctx.translate(WALL_WIDTH, ob.y);
+                // Flip so the base is on the left
+                ctx.scale(-1, 1);
+                ctx.drawImage(ob.variant.img, -ob.depth, 0, ob.depth, ob.height);
+            } else {
+                // Right wall
+                ctx.translate(w - WALL_WIDTH - ob.depth, ob.y);
+                ctx.drawImage(ob.variant.img, 0, 0, ob.depth, ob.height);
+            }
         }
         ctx.restore();
         ctx.globalAlpha = 1;
