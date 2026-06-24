@@ -995,9 +995,9 @@ function loop(timestamp) {
             screenSpinTimer = 0;
             canvas.style.transform = 'none';
         } else {
-            // Spin exactly 2 full rotations (720 degrees) over 5 seconds
+            // Spin exactly 1 full rotation (360 degrees) over 5 seconds
             const progress = 1.0 - (screenSpinTimer / 5.0);
-            const angle = progress * 720;
+            const angle = progress * 360;
             canvas.style.transform = `rotate(${angle}deg)`;
         }
     }
