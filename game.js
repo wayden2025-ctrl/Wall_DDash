@@ -249,6 +249,8 @@ let scrollOffset = 0;
 let screenShakeTime = 0;
 let screenShakeIntensity = 0;
 let screenSpinTimer = 0;
+let screenSpinStartAngle = 0;
+let angleDeg = 0;
 let screenFlipTimer = 0; // The Corrupted Spiral mechanic
 let freezeTime = 0;
 
@@ -939,8 +941,11 @@ function loop(timestamp) {
                         
                         if (hitType === 'spiral') {
                             screenSpinTimer = 5.0; // 5 seconds of spin
+                            screenSpinStartAngle = angleDeg; // Capture current angle (could be 90 if flipped)
+                            screenFlipTimer = 0; // Cancel any active flip
                         } else {
                             screenFlipTimer = 5.0; // 5.0 seconds of flip
+                            screenSpinTimer = 0; // Cancel any active spin
                         }
                         
                         playTone(hitType === 'spiral' ? 300 : 500, 0.3, 'sawtooth', 0.5); // Glitch sound
@@ -1022,7 +1027,7 @@ function loop(timestamp) {
     }
 
     // Screen Spin Mechanic (Corrupted Spiral) & Screen Flip (Flipper)
-    let angleDeg = 0;
+    angleDeg = 0;
     if (screenFlipTimer > 0) {
         screenFlipTimer -= rawDt;
         if (screenFlipTimer <= 0) {
@@ -1047,9 +1052,10 @@ function loop(timestamp) {
             screenSpinTimer = 0;
             angleDeg = 0;
         } else {
-            // Spin exactly 1 full rotation (360 degrees) over 5 seconds
+            // Spin to 360 degrees over 5 seconds from the starting angle
             const progress = 1.0 - (screenSpinTimer / 5.0);
-            angleDeg = progress * 360;
+            const distance = 360 - screenSpinStartAngle;
+            angleDeg = screenSpinStartAngle + (progress * distance);
         }
     }
         
