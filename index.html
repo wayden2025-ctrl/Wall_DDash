@@ -59,10 +59,10 @@
                 
                 
     <div style="display: flex; gap: 20px; justify-content: center; margin-top: 20px;">
-        <button onclick="window.location.href='game.html?v=999'" style="background: linear-gradient(45deg, #ff0055, #0088ff); color: #000; border: none; padding: 15px 40px; font-size: 24px; font-weight: bold; border-radius: 30px; cursor: pointer; text-transform: uppercase; font-family: 'Courier New', Courier, monospace; box-shadow: 0 0 20px rgba(255,0,85,0.6); transition: transform 0.2s, box-shadow 0.2s;">
+        <button onclick="window.location.href='game.html?v=999'" style=" padding: 15px 40px; font-size: 24px; ">
                     Play
                 </button>
-        <button onclick="document.getElementById('store-modal').style.display='flex';" style="background: linear-gradient(45deg, #ffaa00, #ff0055); color: #fff; border: none; padding: 15px 40px; font-size: 24px; font-weight: bold; border-radius: 30px; cursor: pointer; text-transform: uppercase; font-family: 'Courier New', Courier, monospace; box-shadow: 0 0 20px rgba(255,170,0,0.6); transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='scale(1.05)';" onmouseout="this.style.transform='scale(1)';">
+        <button onclick="document.getElementById('store-modal').style.display='flex';" style=" padding: 15px 40px; font-size: 24px; " >
             STORE
         </button>
     </div>
@@ -126,7 +126,7 @@
     <!-- Store Modal -->
     <div id="store-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(5,5,8,0.95); z-index: 10000; flex-direction: column; align-items: center; justify-content: flex-start; overflow-y: auto; font-family: 'Courier New', Courier, monospace; transition: background 0.5s ease; padding: 40px 0;">
         <!-- Close Button Top Right -->
-        <button onclick="document.getElementById('store-modal').style.display='none';" style="position: absolute; top: 20px; right: 30px; background: transparent; color: #fff; border: 2px solid #555; padding: 10px 20px; font-size: 18px; font-weight: bold; border-radius: 10px; cursor: pointer; text-transform: uppercase; transition: all 0.2s;" onmouseover="this.style.borderColor='#fff';" onmouseout="this.style.borderColor='#555';">CLOSE X</button>
+        <button onclick="document.getElementById('store-modal').style.display='none';" style="position: absolute; top: 20px; right: 30px; padding: 10px 20px; font-size: 18px; " >CLOSE X</button>
 
         <!-- Title -->
         <img src="store_header.png" style="width: 90%; max-width: 600px; margin-bottom: 30px; filter: drop-shadow(0 0 10px #ff0055);">
@@ -149,7 +149,7 @@
                 </div>
                 <h3 style="color: #ff00ff; font-size: 32px; margin-bottom: 15px; text-align: center;">Elite Core Bundle</h3>
                 <p style="color: #aaa; text-align: center; font-size: 20px; margin-bottom: 30px; line-height: 1.4;">Unlocks 9 exclusive high-velocity neon orb designs!</p>
-                <button onclick="window.location.href='https://buy.stripe.com/test_5kQ00c2wtfkYcQHgS42wU00'" style="width: 100%; max-width: 400px; background: linear-gradient(45deg, #ff0055, #0088ff); color: #fff; border: none; padding: 20px; font-size: 24px; font-weight: bold; border-radius: 15px; cursor: pointer; box-shadow: 0 0 20px rgba(255,0,255,0.5); transition: transform 0.2s; margin-top: auto;" onmouseover="this.style.transform='scale(1.05)';" onmouseout="this.style.transform='scale(1)';">
+                <button onclick="window.location.href='https://buy.stripe.com/test_5kQ00c2wtfkYcQHgS42wU00'" style="width: 100%; max-width: 400px; padding: 20px; font-size: 24px; margin-top: auto;" >
                     BUY $1.99
                 </button>
             </div>
@@ -159,7 +159,7 @@
                 <img src="revive_logo.jpg" style="width: 180px; height: 180px; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 0 20px #ff0055; object-fit: cover;">
                 <h3 style="color: #ff0055; font-size: 28px; margin-bottom: 10px; text-align: center; text-shadow: 0 0 10px #ff0055;">1x Extra Life</h3>
                 <p style="color: #aaa; text-align: center; margin-bottom: 20px; min-height: 40px; line-height: 1.4;">Resume playing exactly where you died.</p>
-                <button onclick="window.location.href='https://buy.stripe.com/test_revive_1'" style="width: 100%; background: linear-gradient(45deg, #ffaa00, #ff0055); color: #fff; border: none; padding: 15px; font-size: 20px; font-weight: bold; border-radius: 10px; cursor: pointer; box-shadow: 0 0 15px rgba(255,0,85,0.4); transition: transform 0.2s; margin-top: auto;" onmouseover="this.style.transform='scale(1.05)';" onmouseout="this.style.transform='scale(1)';">
+                <button onclick="window.location.href='https://buy.stripe.com/test_revive_1'" style="width: 100%; padding: 15px; font-size: 20px; margin-top: auto;" >
                     BUY $0.99
                 </button>
             </div>
@@ -170,7 +170,7 @@
                 <img src="revive_logo.jpg" style="width: 180px; height: 180px; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 0 30px #ffaa00; object-fit: cover;">
                 <h3 style="color: #ffaa00; font-size: 28px; margin-bottom: 10px; text-align: center; text-shadow: 0 0 10px #ffaa00;">3x Extra Lives</h3>
                 <p style="color: #aaa; text-align: center; margin-bottom: 20px; min-height: 40px; line-height: 1.4;">Stack up on revives to beat your high score!</p>
-                <button onclick="window.location.href='https://buy.stripe.com/test_revive_3'" style="width: 100%; background: linear-gradient(45deg, #ffff00, #ffaa00); color: #000; border: none; padding: 15px; font-size: 20px; font-weight: bold; border-radius: 10px; cursor: pointer; box-shadow: 0 0 15px rgba(255,170,0,0.4); transition: transform 0.2s; margin-top: auto;" onmouseover="this.style.transform='scale(1.05)';" onmouseout="this.style.transform='scale(1)';">
+                <button onclick="window.location.href='https://buy.stripe.com/test_revive_3'" style="width: 100%; padding: 15px; font-size: 20px; margin-top: auto;" >
                     BUY $1.99
                 </button>
             </div>
