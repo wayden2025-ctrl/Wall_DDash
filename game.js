@@ -163,6 +163,7 @@ function revivePlayer() {
     
     // Clear screen spin
     screenSpinTimer = 0;
+    screenFlipTimer = 0;
     canvas.style.transform = 'translate(-50%, -50%) rotate(0rad) scale(1)';
     
     gameOverScreen.classList.add('hidden');
@@ -247,7 +248,9 @@ const PERFECT_DIST = 35;
 let scrollOffset = 0;
 let screenShakeTime = 0;
 let screenShakeIntensity = 0;
-let screenSpinTimer = 0; // The Corrupted Spiral mechanic
+let screenSpinTimer = 0;
+    screenFlipTimer = 0;
+let screenFlipTimer = 0; // The Corrupted Spiral mechanic
 let freezeTime = 0;
 
 // ── Neon Hacker Matrix Rain Initialization ──
@@ -458,14 +461,20 @@ function spawnObstacle() {
     const spikeHeight = variant.height * randomScale;
     const spikeDepth = variant.width * randomScale;
 
-    const isSpiral = Math.random() < 0.15; // 15% chance to spawn a spiral
+    const rand = Math.random();
+    let type = 'spike';
+    if (rand < 0.10) {
+        type = 'spiral';
+    } else if (rand < 0.20) {
+        type = 'flipper';
+    }
     
-    if (isSpiral) {
+    if (type === 'spiral' || type === 'flipper') {
         yPos -= 500; // Spawns way offscreen, creating a massive gap before the spiral
         
         // Floating slightly off the wall, radius ~30
         obstacles.push({
-            type: 'spiral',
+            type: type,
             lane,
             y: yPos,
             radius: 30,
@@ -716,6 +725,7 @@ function startGame() {
     
     // Clear screen spin
     screenSpinTimer = 0;
+    screenFlipTimer = 0;
     canvas.style.transform = 'translate(-50%, -50%) rotate(0rad) scale(1)';
 
     startScreen.classList.add('hidden');
@@ -747,6 +757,7 @@ function gameOver() {
     
     // Immediately stop the screen from spinning if they died
     screenSpinTimer = 0;
+    screenFlipTimer = 0;
     canvas.style.transform = 'translate(-50%, -50%) rotate(0rad) scale(1)';
     
     // We do NOT show the UI here anymore; it is handled in the loop after the freeze.
@@ -909,13 +920,13 @@ function loop(timestamp) {
             const ob = obstacles[i];
             ob.y += currentSpeed * dt;
             
-            if (ob.type === 'spiral') {
-                ob.rotation += 5 * dt; // Hypnotic spin animation speed
+            if (ob.type === 'spiral' || ob.type === 'flipper') {
+                ob.rotation += 5 * dt;
             }
 
             // Collision
             if (ob.lane === player.lane) {
-                if (ob.type === 'spiral') {
+                if (ob.type === 'spiral' || ob.type === 'flipper') {
                     // Simple circle collision
                     const obX = ob.lane === 0 ? WALL_WIDTH + ob.radius + 15 : canvas.width - WALL_WIDTH - ob.radius - 15;
                     const obY = ob.y;
@@ -924,10 +935,16 @@ function loop(timestamp) {
                     const dist = Math.sqrt(dx*dx + dy*dy);
                     
                     if (dist < (PLAYER_RADIUS + ob.radius)) {
-                        // Hit Spiral!
+                        const hitType = ob.type;
                         obstacles.splice(i, 1);
-                        screenSpinTimer = 5.0; // 5 seconds of spin
-                        playTone(300, 0.3, 'sawtooth', 0.5); // Glitch sound
+                        
+                        if (hitType === 'spiral') {
+                            screenSpinTimer = 5.0; // 5 seconds of spin
+                        } else {
+                            screenFlipTimer = 0.5; // 0.5 seconds of flip
+                        }
+                        
+                        playTone(hitType === 'spiral' ? 300 : 500, 0.3, 'sawtooth', 0.5); // Glitch sound
                         score += 100; // Bonus points for risk
                         
                         // Spawn glitch particles
@@ -939,7 +956,7 @@ function loop(timestamp) {
                                 vx: (Math.random() - 0.5) * 800,
                                 vy: (Math.random() - 0.5) * 800,
                                 life: 1.0,
-                                color: '#ff0055' // Red glitch
+                                color: hitType === 'spiral' ? '#ff0055' : '#00ff55'
                             });
                         }
                         continue;
@@ -1005,11 +1022,18 @@ function loop(timestamp) {
         screenShakeTime -= dt;
     }
 
-    // Screen Spin Mechanic (Corrupted Spiral)
-    if (screenSpinTimer > 0) {
+    // Screen Spin Mechanic (Corrupted Spiral) & Screen Flip (Flipper)
+    let angleDeg = 0;
+    if (screenFlipTimer > 0) {
+        screenFlipTimer -= rawDt;
+        if (screenFlipTimer <= 0) {
+            screenFlipTimer = 0;
+            angleDeg = 0;
+        } else {
+            angleDeg = 90;
+        }
+    } else if (screenSpinTimer > 0) {
         screenSpinTimer -= rawDt; // independent of timeScale
-        
-        let angleDeg = 0;
         if (screenSpinTimer <= 0) {
             screenSpinTimer = 0;
             angleDeg = 0;
@@ -1018,6 +1042,7 @@ function loop(timestamp) {
             const progress = 1.0 - (screenSpinTimer / 5.0);
             angleDeg = progress * 360;
         }
+    }
         
         // Convert angle to radians for math
         const angleRad = angleDeg * (Math.PI / 180);
