@@ -618,8 +618,8 @@ function spawnShatterParticles(x, y, color) {
             size: 4 + Math.random() * 8,
             x: x, 
             y: y,
-            vx: (Math.random() - 0.5) * 1200,
-            vy: (Math.random() - 0.5) * 1200 - 400,
+            vx: (Math.random() - 0.5) * 2000,
+            vy: (Math.random() - 0.5) * 2000,
             life: 2.0 + Math.random(),
             color: color || selectedOrbColor,
             isShatter: true,
@@ -935,7 +935,6 @@ function loop(timestamp) {
         p.y += p.vy * dt;
         
         if (p.isShatter) {
-            p.vy += 3000 * dt; // Gravity
             p.angle += p.vAngle * dt;
             // Bounce off walls
             if (p.x < WALL_WIDTH) {
