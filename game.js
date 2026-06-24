@@ -701,7 +701,7 @@ function gameOver() {
     playHit();
     freezeTime = 0.15; // Hit stop for 150ms
     screenShakeTime = 0.4; // Reduced shake duration
-    screenShakeIntensity = 15; // Reduced shake magnitude
+    screenShakeIntensity = 6; // Very subtle shake magnitude
     spawnShatterParticles(player.visualX, player.y, selectedOrbColor);
     
     // We do NOT show the UI here anymore; it is handled in the loop after the freeze.
@@ -798,7 +798,7 @@ function loop(timestamp) {
             player.isDashing = false;
             // Minor hit stop and screen shake on dash landing
             screenShakeTime = 0.1;
-            screenShakeIntensity = 5;
+            screenShakeIntensity = 2;
             // Determine direction of embers (away from wall)
             const dir = player.lane === 0 ? 1 : -1; 
             spawnImpactEmbers(player.visualX, player.visualY, dir);
