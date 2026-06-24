@@ -1065,7 +1065,6 @@ function loop(timestamp) {
         // Apply rotation and scaling strictly to the canvas, NOT the container!
         // The container holds the UI, so UI stays upright.
         canvas.style.transform = `translate(-50%, -50%) rotate(${angleDeg}deg) scale(${scale})`;
-    }
 
     // Scroll offset for perspective grid
     scrollOffset = (scrollOffset + currentSpeed * dt) % 1000;
