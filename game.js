@@ -439,7 +439,7 @@ let nextLane = Math.random() < 0.5 ? 0 : 1;
 let sameSideCount = 0;
 
 function spawnObstacle() {
-    const yPos = -150; // spawn fully offscreen
+    let yPos = -150; // spawn fully offscreen
     let lane = nextLane;
 
     // Pick a random variant
