@@ -1034,16 +1034,20 @@ function loop(timestamp) {
             screenFlipTimer = 0;
             angleDeg = 0;
         } else {
-            // Smoothly rotate to 90 degrees over the first 1 second
+            // Smoothly rotate to 90 degrees over the first 1 second, hold for 3, and rotate back over the last 1 second
             const elapsed = 5.0 - screenFlipTimer;
             if (elapsed <= 1.0) {
-                // Smooth easing (e.g. cubic ease out, or just linear)
-                // Let's use linear for now, or sine ease out for extra smoothness
+                // Smooth easing to 90
                 const progress = elapsed / 1.0;
-                // Sine ease out: Math.sin((progress * Math.PI) / 2)
                 angleDeg = Math.sin((progress * Math.PI) / 2) * 90;
-            } else {
+            } else if (elapsed <= 4.0) {
+                // Hold at 90
                 angleDeg = 90;
+            } else {
+                // Smooth easing back to 0
+                const progress = (elapsed - 4.0) / 1.0;
+                // Using cos goes from 1 to 0 smoothly as progress goes from 0 to 1
+                angleDeg = Math.cos((progress * Math.PI) / 2) * 90;
             }
         }
     } else if (screenSpinTimer > 0) {
