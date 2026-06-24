@@ -163,11 +163,7 @@ function revivePlayer() {
     
     // Clear screen spin
     screenSpinTimer = 0;
-    const gameContainer = document.getElementById('game-container');
-    if (gameContainer) {
-        gameContainer.style.transform = 'none';
-        gameContainer.style.overflow = 'hidden';
-    }
+    canvas.style.transform = 'none';
     
     gameOverScreen.classList.add('hidden');
     
@@ -711,11 +707,7 @@ function startGame() {
     
     // Clear screen spin
     screenSpinTimer = 0;
-    const gameContainer = document.getElementById('game-container');
-    if (gameContainer) {
-        gameContainer.style.transform = 'none';
-        gameContainer.style.overflow = 'hidden';
-    }
+    canvas.style.transform = 'none';
 
     startScreen.classList.add('hidden');
     gameOverScreen.classList.add('hidden');
@@ -746,11 +738,7 @@ function gameOver() {
     
     // Immediately stop the screen from spinning if they died
     screenSpinTimer = 0;
-    const gameContainer = document.getElementById('game-container');
-    if (gameContainer) {
-        gameContainer.style.transform = 'none';
-        gameContainer.style.overflow = 'hidden';
-    }
+    canvas.style.transform = 'none';
     
     // We do NOT show the UI here anymore; it is handled in the loop after the freeze.
 }
@@ -1009,24 +997,16 @@ function loop(timestamp) {
     }
 
     // Screen Spin Mechanic (Corrupted Spiral)
-    const gameContainer = document.getElementById('game-container');
     if (screenSpinTimer > 0) {
         screenSpinTimer -= rawDt; // independent of timeScale
         if (screenSpinTimer <= 0) {
             screenSpinTimer = 0;
-            if (gameContainer) {
-                gameContainer.style.transform = 'none';
-                gameContainer.style.overflow = 'hidden';
-            }
+            canvas.style.transform = 'none';
         } else {
             // Spin exactly 1 full rotation (360 degrees) over 5 seconds
             const progress = 1.0 - (screenSpinTimer / 5.0);
             const angle = progress * 360;
-            // Scale up by 1.5 to ensure the corners cover the whole screen, and remove overflow
-            if (gameContainer) {
-                gameContainer.style.transform = `rotate(${angle}deg) scale(1.5)`;
-                gameContainer.style.overflow = 'visible';
-            }
+            canvas.style.transform = `rotate(${angle}deg)`;
         }
     }
 
