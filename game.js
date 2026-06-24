@@ -161,6 +161,10 @@ function revivePlayer() {
     revivesLeft--;
     localStorage.setItem('revivesLeft', revivesLeft.toString());
     
+    // Clear screen spin
+    screenSpinTimer = 0;
+    canvas.style.transform = 'none';
+    
     gameOverScreen.classList.add('hidden');
     
     // Clear obstacles around the player
@@ -692,6 +696,10 @@ function startGame() {
     particles = [];
     spawnTimer = 1.5; // grace period before first spike
     scrollOffset = 0;
+    
+    // Clear screen spin
+    screenSpinTimer = 0;
+    canvas.style.transform = 'none';
 
     startScreen.classList.add('hidden');
     gameOverScreen.classList.add('hidden');
@@ -719,6 +727,10 @@ function gameOver() {
     screenShakeTime = 0.4; // Reduced shake duration
     screenShakeIntensity = 6; // Very subtle shake magnitude
     spawnShatterParticles(player.visualX, player.y, selectedOrbColor);
+    
+    // Immediately stop the screen from spinning if they died
+    screenSpinTimer = 0;
+    canvas.style.transform = 'none';
     
     // We do NOT show the UI here anymore; it is handled in the loop after the freeze.
 }
