@@ -452,6 +452,8 @@ function spawnObstacle() {
     const isSpiral = Math.random() < 0.15; // 15% chance to spawn a spiral
     
     if (isSpiral) {
+        yPos -= 500; // Spawns way offscreen, creating a massive gap before the spiral
+        
         // Floating slightly off the wall, radius ~30
         obstacles.push({
             type: 'spiral',
@@ -504,6 +506,12 @@ function spawnObstacle() {
         physicalDistance = spikeHeight + 10 + Math.random() * 50; 
     }
     
+    if (isSpiral) {
+        // Enforce a massive gap AFTER the spiral so the player has time to recover while spinning.
+        // We add 1000 because we shifted yPos up by 500, and we want another 500 gap after it.
+        physicalDistance += 1000; 
+    }
+
     // Timer is distance divided by speed
     spawnTimer = physicalDistance / currentSpeed;
 }
