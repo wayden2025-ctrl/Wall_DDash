@@ -523,8 +523,8 @@ function spawnObstacle() {
         physicalDistance = spikeHeight + 10 + Math.random() * 50; 
     }
     
-    if (isSpiral) {
-        // Enforce a massive gap AFTER the spiral so the player has time to recover while spinning.
+    if (type === 'spiral' || type === 'flipper') {
+        // Enforce a massive gap AFTER the spiral/flipper so the player has time to recover while spinning.
         // We add 1000 because we shifted yPos up by 500, and we want another 500 gap after it.
         physicalDistance += 1000; 
     }
