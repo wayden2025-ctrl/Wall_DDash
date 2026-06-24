@@ -251,7 +251,8 @@ let screenShakeIntensity = 0;
 let screenSpinTimer = 0;
 let screenSpinStartAngle = 0;
 let angleDeg = 0;
-let screenFlipTimer = 0; // The Corrupted Spiral mechanic
+let screenFlipTimer = 0;
+let screenFlipMaxTimer = 0;
 let freezeTime = 0;
 
 // ── Neon Hacker Matrix Rain Initialization ──
@@ -943,8 +944,16 @@ function loop(timestamp) {
                             screenSpinTimer = 5.0; // 5 seconds of spin
                             screenSpinStartAngle = angleDeg; // Capture current angle (could be 90 if flipped)
                             screenFlipTimer = 0; // Cancel any active flip
+                            screenFlipMaxTimer = 0;
                         } else {
-                            screenFlipTimer = 5.0; // 5.0 seconds of flip
+                            if (screenFlipTimer > 0) {
+                                // If already flipped, extend the timers to avoid re-triggering the start animation
+                                screenFlipTimer += 5.0;
+                                screenFlipMaxTimer += 5.0;
+                            } else {
+                                screenFlipTimer = 5.0; 
+                                screenFlipMaxTimer = 5.0;
+                            }
                             screenSpinTimer = 0; // Cancel any active spin
                         }
                         
@@ -1034,20 +1043,20 @@ function loop(timestamp) {
             screenFlipTimer = 0;
             angleDeg = 0;
         } else {
-            // Smoothly rotate to 90 degrees over the first 1 second, hold for 3, and rotate back over the last 1 second
-            const elapsed = 5.0 - screenFlipTimer;
+            // Smoothly rotate to 90 degrees over the first 1 second, hold for remaining, and rotate back over the last 1 second
+            const elapsed = screenFlipMaxTimer - screenFlipTimer;
             if (elapsed <= 1.0) {
                 // Smooth easing to 90
                 const progress = elapsed / 1.0;
                 angleDeg = Math.sin((progress * Math.PI) / 2) * 90;
-            } else if (elapsed <= 4.0) {
-                // Hold at 90
-                angleDeg = 90;
-            } else {
-                // Smooth easing back to 0
-                const progress = (elapsed - 4.0) / 1.0;
+            } else if (screenFlipTimer <= 1.0) {
+                // Smooth easing back to 0 (last 1 second of whatever the max timer is)
+                const progress = 1.0 - screenFlipTimer;
                 // Using cos goes from 1 to 0 smoothly as progress goes from 0 to 1
                 angleDeg = Math.cos((progress * Math.PI) / 2) * 90;
+            } else {
+                // Hold at 90
+                angleDeg = 90;
             }
         }
     } else if (screenSpinTimer > 0) {
