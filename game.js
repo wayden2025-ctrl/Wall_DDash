@@ -700,28 +700,11 @@ function gameOver() {
     isPlaying = false;
     playHit();
     freezeTime = 0.15; // Hit stop for 150ms
-    screenShakeTime = 0.6; // Massive shake duration
-    screenShakeIntensity = 30; // Massive shake magnitude
+    screenShakeTime = 0.4; // Reduced shake duration
+    screenShakeIntensity = 15; // Reduced shake magnitude
     spawnShatterParticles(player.visualX, player.y, selectedOrbColor);
-
-    gameOverScreen.classList.remove('hidden');
-    finalScoreEl.innerText = Math.floor(score);
-    finalComboEl.innerText = maxCombo;
     
-    const reviveBtn = document.getElementById('revive-btn');
-    if (reviveBtn) {
-        if (revivesLeft > 0) {
-            reviveBtn.innerHTML = `REVIVE (${revivesLeft} Left)<br><span style="font-size:14px; color:#eee; font-weight:normal; text-shadow:none; letter-spacing:1px; margin-top:5px; display:block;">Free revives refresh every day!</span>`;
-            reviveBtn.onclick = revivePlayer;
-            reviveBtn.style.background = 'linear-gradient(45deg, #00ffaa, #0088ff)';
-            reviveBtn.style.boxShadow = '0 0 20px rgba(0,255,170,0.6)';
-        } else {
-            reviveBtn.innerHTML = `BUY MORE REVIVES<br><span style="font-size:14px; color:#eee; font-weight:normal; text-shadow:none; letter-spacing:1px; margin-top:5px; display:block;">Or wait until tomorrow for 3 free!</span>`;
-            reviveBtn.onclick = () => document.getElementById('store-modal').style.display = 'flex';
-            reviveBtn.style.background = 'linear-gradient(45deg, #ffaa00, #ff0055)';
-            reviveBtn.style.boxShadow = '0 0 20px rgba(255,170,0,0.6)';
-        }
-    }
+    // We do NOT show the UI here anymore; it is handled in the loop after the freeze.
 }
 
 function triggerWin() {
@@ -741,10 +724,8 @@ function triggerWin() {
 //  MAIN LOOP
 // ════════════════════════════════════════════════════════════════
 function loop(timestamp) {
-    if (!isPlaying && freezeTime <= 0) return;
-
     let rawDt = (timestamp - lastTime) / 1000;
-    // Cap max delta time to 0.1s to prevent huge skips if the game lags or resumes
+    // Cap max delta time to 0.1s to prevent huge skips
     if (rawDt > 0.1) rawDt = 0.1;
     
     lastTime = timestamp;
@@ -765,11 +746,15 @@ function loop(timestamp) {
                 const reviveBtn = document.getElementById('revive-btn');
                 if (reviveBtn) {
                     if (revivesLeft > 0) {
-                        reviveBtn.innerHTML = `<img src="btn_revive.png" style="width: 100%; max-width: 400px; object-fit: contain;">`;
+                        reviveBtn.innerHTML = `REVIVE (${revivesLeft} Left)<br><span style="font-size:14px; color:#eee; font-weight:normal; text-shadow:none; letter-spacing:1px; margin-top:5px; display:block;">Free revives refresh every day!</span>`;
                         reviveBtn.onclick = revivePlayer;
+                        reviveBtn.style.background = 'linear-gradient(45deg, #00ffaa, #0088ff)';
+                        reviveBtn.style.boxShadow = '0 0 20px rgba(0,255,170,0.6)';
                     } else {
-                        reviveBtn.innerHTML = `<img src="btn_revive.png" style="width: 100%; max-width: 400px; object-fit: contain; filter: grayscale(100%);">`;
+                        reviveBtn.innerHTML = `BUY MORE REVIVES<br><span style="font-size:14px; color:#eee; font-weight:normal; text-shadow:none; letter-spacing:1px; margin-top:5px; display:block;">Or wait until tomorrow for 3 free!</span>`;
                         reviveBtn.onclick = () => document.getElementById('store-modal').style.display = 'flex';
+                        reviveBtn.style.background = 'linear-gradient(45deg, #ffaa00, #ff0055)';
+                        reviveBtn.style.boxShadow = '0 0 20px rgba(255,170,0,0.6)';
                     }
                 }
             }
@@ -780,52 +765,49 @@ function loop(timestamp) {
         }
     }
     
-    lastTime = timestamp;
     const dt = rawDt * timeScale;
 
-    timeSurvived += dt;
-    score += dt * getMultiplier();
-
-    // Win condition
-    if (score >= 1000000) {
-        triggerWin();
-        return;
-    }
-
-    // Speed Curve
-    // Smoothly increases over time. Starts at 400.
-    // Adds 15 speed every second. In 60 seconds = 1300. In 120 seconds = 2200 (Extremely fast)
-    currentSpeed = baseSpeed + (timeSurvived * 15);
-
-    // Smooth player position
-    const lerp = Math.min(1, 50 * dt); // extremely fast snap
-    player.visualX += (player.targetX - player.visualX) * lerp;
-    
-    // Calculate distance to target to create a subtle vertical "arc" (slant) during dash
-    const distToTarget = Math.abs(player.targetX - player.visualX);
-    
-    // Impact Embers and Micro Shake on landing
-    if (distToTarget > 10) {
-        player.isDashing = true;
-    } else if (player.isDashing && distToTarget <= 10) {
-        player.isDashing = false;
-        // Minor hit stop and screen shake on dash landing
-        screenShakeTime = 0.1;
-        screenShakeIntensity = 5;
-        // Determine direction of embers (away from wall)
-        const dir = player.lane === 0 ? 1 : -1; 
-        spawnImpactEmbers(player.visualX, player.visualY, dir);
-    }
-    const maxDist = canvas.width - (WALL_WIDTH * 2) - (PLAYER_RADIUS * 2);
-    // Subtle Y bump: max 12px up in the middle of the dash
-    const arcHeight = 12 * Math.sin(Math.PI * (1 - (distToTarget / maxDist)));
-    player.visualY = player.y - arcHeight;
-    player.history = player.history || [];
-    player.history.push({x: player.visualX, y: player.visualY});
-    if (player.history.length > 8) player.history.shift();
-
-    // Player trail particles
     if (isPlaying) {
+        timeSurvived += dt;
+        score += dt * getMultiplier();
+
+        // Win condition
+        if (score >= 1000000) {
+            triggerWin();
+            return;
+        }
+
+        // Speed Curve
+        currentSpeed = baseSpeed + (timeSurvived * 15);
+
+        // Smooth player position
+        const lerp = Math.min(1, 50 * dt); // extremely fast snap
+        player.visualX += (player.targetX - player.visualX) * lerp;
+        
+        // Calculate distance to target to create a subtle vertical "arc" (slant) during dash
+        const distToTarget = Math.abs(player.targetX - player.visualX);
+        
+        // Impact Embers and Micro Shake on landing
+        if (distToTarget > 10) {
+            player.isDashing = true;
+        } else if (player.isDashing && distToTarget <= 10) {
+            player.isDashing = false;
+            // Minor hit stop and screen shake on dash landing
+            screenShakeTime = 0.1;
+            screenShakeIntensity = 5;
+            // Determine direction of embers (away from wall)
+            const dir = player.lane === 0 ? 1 : -1; 
+            spawnImpactEmbers(player.visualX, player.visualY, dir);
+        }
+        const maxDist = canvas.width - (WALL_WIDTH * 2) - (PLAYER_RADIUS * 2);
+        // Subtle Y bump: max 12px up in the middle of the dash
+        const arcHeight = 12 * Math.sin(Math.PI * (1 - (distToTarget / maxDist)));
+        player.visualY = player.y - arcHeight;
+        player.history = player.history || [];
+        player.history.push({x: player.visualX, y: player.visualY});
+        if (player.history.length > 8) player.history.shift();
+
+        // Player trail particles
         const isPremium = selectedOrbId >= 10;
         const spawnCount = isPremium ? 5 : 2; 
         for (let i = 0; i < spawnCount; i++) {
@@ -842,37 +824,58 @@ function loop(timestamp) {
                 life: (isPremium ? 0.25 : 0.15) + Math.random() * 0.2
             });
         }
-    }
 
-    // Spawning
-    spawnTimer -= dt;
-    if (spawnTimer <= 0) spawnObstacle();
+        // Spawning
+        spawnTimer -= dt;
+        if (spawnTimer <= 0) spawnObstacle();
 
         // Ambient environment particles (dust, sparks, light motes)
-    if (isPlaying && Math.random() < 0.8) {
-        particles.push({ size: 2 + Math.random()*3,
-            x: Math.random() * canvas.width,
-            y: canvas.height + 20, // start slightly offscreen bottom
-            vx: (Math.random() - 0.5) * 20,
-            vy: -currentSpeed * (0.1 + Math.random() * 0.2), // float up slowly relative to speed
-            color: Math.random() > 0.5 ? 'rgba(0, 255, 255, 0.4)' : 'rgba(255, 0, 255, 0.4)',
-            life: 1.5 + Math.random() * 1.0,
-            isAmbient: true
-        });
-    }
+        if (Math.random() < 0.8) {
+            particles.push({ size: 2 + Math.random()*3,
+                x: Math.random() * canvas.width,
+                y: canvas.height + 20, // start slightly offscreen bottom
+                vx: (Math.random() - 0.5) * 20,
+                vy: -currentSpeed * (0.1 + Math.random() * 0.2), // float up slowly relative to speed
+                color: Math.random() > 0.5 ? 'rgba(0, 255, 255, 0.4)' : 'rgba(255, 0, 255, 0.4)',
+                life: 1.5 + Math.random() * 1.0,
+                isAmbient: true
+            });
+        }
 
-    // Wall electric sparks
-    if (isPlaying && Math.random() < 0.2) {
-        const wallX = Math.random() > 0.5 ? WALL_WIDTH : canvas.width - WALL_WIDTH;
-        particles.push({ size: 2 + Math.random()*3,
-            x: wallX,
-            y: Math.random() * canvas.height,
-            vx: (wallX === WALL_WIDTH ? 1 : -1) * (Math.random() * 100),
-            vy: (Math.random() - 0.5) * 200,
-            color: '#0088ff',
-            life: 0.4 + Math.random() * 0.3
-        });
-    }
+        // Wall electric sparks
+        if (Math.random() < 0.2) {
+            const wallX = Math.random() > 0.5 ? WALL_WIDTH : canvas.width - WALL_WIDTH;
+            particles.push({ size: 2 + Math.random()*3,
+                x: wallX,
+                y: Math.random() * canvas.height,
+                vx: (wallX === WALL_WIDTH ? 1 : -1) * (Math.random() * 100),
+                vy: (Math.random() - 0.5) * 200,
+                color: '#0088ff',
+                life: 0.4 + Math.random() * 0.3
+            });
+        }
+        
+        // Update obstacles
+        for (let i = obstacles.length - 1; i >= 0; i--) {
+            const ob = obstacles[i];
+            ob.y += currentSpeed * dt;
+
+            // Collision
+            if (ob.lane === player.lane && playerHitsSpike(ob)) {
+                gameOver();
+            }
+
+            // Passed
+            if (!ob.passed && ob.y > player.y + PLAYER_RADIUS) {
+                ob.passed = true;
+                combo++;
+                if (combo > maxCombo) maxCombo = combo;
+            }
+
+            // Remove offscreen
+            if (ob.y > canvas.height + 50) obstacles.splice(i, 1);
+        }
+    } // end if (isPlaying)
 
     // Update Shapes
     bgObjects.forEach(bg => {
@@ -921,28 +924,6 @@ function loop(timestamp) {
     // Scroll offset for perspective grid
     scrollOffset = (scrollOffset + currentSpeed * dt) % 1000;
 
-    // Update obstacles
-    for (let i = obstacles.length - 1; i >= 0; i--) {
-        const ob = obstacles[i];
-        ob.y += currentSpeed * dt;
-
-        // Collision
-        if (ob.lane === player.lane && playerHitsSpike(ob)) {
-            gameOver();
-        }
-
-        // Passed
-        if (!ob.passed && ob.y > player.y + PLAYER_RADIUS) {
-            ob.passed = true;
-            combo++;
-            if (combo > maxCombo) maxCombo = combo;
-        }
-
-        // Remove offscreen
-        if (ob.y > canvas.height + 50) obstacles.splice(i, 1);
-    }
-
-
     // Update active particles (trail, sparks, ambient, shatter, embers)
     for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i];
@@ -976,8 +957,8 @@ function loop(timestamp) {
     updateUI();
     draw();
 
-    if (isPlaying) requestAnimationFrame(loop);
-    else draw(); // one last frame
+    // Keep running the loop even if not playing, to animate particles!
+    requestAnimationFrame(loop);
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -1158,7 +1139,7 @@ function draw() {
     });
 
     // ── Draw Player ───────────────────────────
-    if (isPlaying || true) {
+    if (isPlaying || freezeTime > 0) {
         const px = player.visualX;
         const py = player.visualY || player.y;
 
