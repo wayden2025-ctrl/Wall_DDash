@@ -249,7 +249,6 @@ let scrollOffset = 0;
 let screenShakeTime = 0;
 let screenShakeIntensity = 0;
 let screenSpinTimer = 0;
-    screenFlipTimer = 0;
 let screenFlipTimer = 0; // The Corrupted Spiral mechanic
 let freezeTime = 0;
 
@@ -314,7 +313,7 @@ function createMatrixStream(randomY = false) {
     };
 }
 
-window.ambientParticles = [];
+let ambientParticles = [];
 for (let i = 0; i < 30; i++) {
     ambientParticles.push({
         x: Math.random(),
