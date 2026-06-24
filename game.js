@@ -163,7 +163,7 @@ function revivePlayer() {
     
     // Clear screen spin
     screenSpinTimer = 0;
-    canvas.style.transform = 'none';
+    canvas.style.transform = 'translate(-50%, -50%) rotate(0rad) scale(1)';
     
     gameOverScreen.classList.add('hidden');
     
@@ -329,6 +329,15 @@ for (let i = 0; i < 30; i++) {
 function resize() {
     canvas.width  = container.clientWidth;
     canvas.height = container.clientHeight;
+    
+    // Ensure canvas is absolutely centered in the container so transform: rotate spins around the center
+    canvas.style.position = 'absolute';
+    canvas.style.top = '50%';
+    canvas.style.left = '50%';
+    // The translate(-50%, -50%) is applied in the update loop along with rotation and scale.
+    // Set initial transform so it's centered before update runs.
+    canvas.style.transform = `translate(-50%, -50%) rotate(${typeof screenRotation !== 'undefined' ? screenRotation : 0}rad) scale(1)`;
+    canvas.style.transformOrigin = 'center center';
     player.y = canvas.height - 220;
     setPlayerX(true);
 }
@@ -707,7 +716,7 @@ function startGame() {
     
     // Clear screen spin
     screenSpinTimer = 0;
-    canvas.style.transform = 'none';
+    canvas.style.transform = 'translate(-50%, -50%) rotate(0rad) scale(1)';
 
     startScreen.classList.add('hidden');
     gameOverScreen.classList.add('hidden');
@@ -738,7 +747,7 @@ function gameOver() {
     
     // Immediately stop the screen from spinning if they died
     screenSpinTimer = 0;
-    canvas.style.transform = 'none';
+    canvas.style.transform = 'translate(-50%, -50%) rotate(0rad) scale(1)';
     
     // We do NOT show the UI here anymore; it is handled in the loop after the freeze.
 }
@@ -999,15 +1008,38 @@ function loop(timestamp) {
     // Screen Spin Mechanic (Corrupted Spiral)
     if (screenSpinTimer > 0) {
         screenSpinTimer -= rawDt; // independent of timeScale
+        
+        let angleDeg = 0;
         if (screenSpinTimer <= 0) {
             screenSpinTimer = 0;
-            canvas.style.transform = 'none';
+            angleDeg = 0;
         } else {
             // Spin exactly 1 full rotation (360 degrees) over 5 seconds
             const progress = 1.0 - (screenSpinTimer / 5.0);
-            const angle = progress * 360;
-            canvas.style.transform = `rotate(${angle}deg)`;
+            angleDeg = progress * 360;
         }
+        
+        // Convert angle to radians for math
+        const angleRad = angleDeg * (Math.PI / 180);
+        
+        // Calculate Bounding Box of the rotated canvas
+        const absCos = Math.abs(Math.cos(angleRad));
+        const absSin = Math.abs(Math.sin(angleRad));
+        const boundingW = canvas.width * absCos + canvas.height * absSin;
+        const boundingH = canvas.width * absSin + canvas.height * absCos;
+        
+        // Calculate scale to fit exactly inside window viewport
+        // (to prevent corners from clipping off the physical screen)
+        const scaleX = window.innerWidth / boundingW;
+        const scaleY = window.innerHeight / boundingH;
+        let scale = Math.min(scaleX, scaleY);
+        
+        // We only scale down (scale < 1.0), we never scale up
+        if (scale > 1.0) scale = 1.0;
+        
+        // Apply rotation and scaling strictly to the canvas, NOT the container!
+        // The container holds the UI, so UI stays upright.
+        canvas.style.transform = `translate(-50%, -50%) rotate(${angleDeg}deg) scale(${scale})`;
     }
 
     // Scroll offset for perspective grid
