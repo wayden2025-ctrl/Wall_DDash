@@ -1264,46 +1264,73 @@ function draw() {
         
         ctx.save();
         
-        if (ob.type === 'spiral') {
+        if (ob.type === 'spiral' || ob.type === 'flipper') {
             const obX = ob.lane === 0 ? WALL_WIDTH + ob.radius + 15 : w - WALL_WIDTH - ob.radius - 15;
             ctx.translate(obX, ob.y);
             ctx.rotate(ob.rotation);
             
-            // Draw a spinning red spiral
-            ctx.shadowBlur = 20;
-            ctx.shadowColor = '#ff0055';
-            ctx.strokeStyle = '#ff0055';
-            ctx.lineWidth = 4;
-            
-            ctx.beginPath();
-            // Draw a spiral using polar coordinates
-            for (let i = 0; i < Math.PI * 6; i += 0.2) { // 3 full coils
-                const r = (i / (Math.PI * 6)) * ob.radius;
-                const sx = Math.cos(i) * r;
-                const sy = Math.sin(i) * r;
-                if (i === 0) ctx.moveTo(sx, sy);
-                else ctx.lineTo(sx, sy);
+            if (ob.type === 'spiral') {
+                // Draw a spinning red spiral
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = '#ff0055';
+                ctx.strokeStyle = '#ff0055';
+                ctx.lineWidth = 4;
+                
+                ctx.beginPath();
+                // Draw a spiral using polar coordinates
+                for (let i = 0; i < Math.PI * 6; i += 0.2) { // 3 full coils
+                    const r = (i / (Math.PI * 6)) * ob.radius;
+                    const sx = Math.cos(i) * r;
+                    const sy = Math.sin(i) * r;
+                    if (i === 0) ctx.moveTo(sx, sy);
+                    else ctx.lineTo(sx, sy);
+                }
+                ctx.stroke();
+                
+                // Draw a secondary inverted coil for a cooler effect
+                ctx.beginPath();
+                for (let i = 0; i < Math.PI * 6; i += 0.2) {
+                    const r = (i / (Math.PI * 6)) * ob.radius;
+                    const sx = Math.cos(i + Math.PI) * r;
+                    const sy = Math.sin(i + Math.PI) * r;
+                    if (i === 0) ctx.moveTo(sx, sy);
+                    else ctx.lineTo(sx, sy);
+                }
+                ctx.stroke();
+                
+                // Inner core
+                ctx.fillStyle = '#ffffff';
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(0, 0, ob.radius * 0.25, 0, Math.PI * 2);
+                ctx.fill();
+            } else {
+                // Draw a green diamond (flipper)
+                ctx.beginPath();
+                ctx.moveTo(0, -ob.radius);
+                ctx.lineTo(ob.radius, 0);
+                ctx.lineTo(0, ob.radius);
+                ctx.lineTo(-ob.radius, 0);
+                ctx.closePath();
+                ctx.strokeStyle = '#00ff55';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                
+                // Inner diamond
+                ctx.beginPath();
+                ctx.moveTo(0, -ob.radius * 0.5);
+                ctx.lineTo(ob.radius * 0.5, 0);
+                ctx.lineTo(0, ob.radius * 0.5);
+                ctx.lineTo(-ob.radius * 0.5, 0);
+                ctx.closePath();
+                ctx.fillStyle = 'rgba(0, 255, 85, 0.3)';
+                ctx.fill();
+                
+                // Outer glow
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = '#00ff55';
             }
-            ctx.stroke();
-            
-            // Draw a secondary inverted coil for a cooler effect
-            ctx.beginPath();
-            for (let i = 0; i < Math.PI * 6; i += 0.2) {
-                const r = (i / (Math.PI * 6)) * ob.radius;
-                const sx = Math.cos(i + Math.PI) * r;
-                const sy = Math.sin(i + Math.PI) * r;
-                if (i === 0) ctx.moveTo(sx, sy);
-                else ctx.lineTo(sx, sy);
-            }
-            ctx.stroke();
-            
-            // Inner core
-            ctx.fillStyle = '#ffffff';
-            ctx.shadowBlur = 10;
-            ctx.shadowColor = '#ffffff';
-            ctx.beginPath();
-            ctx.arc(0, 0, ob.radius * 0.25, 0, Math.PI * 2);
-            ctx.fill();
             
         } else {
             if (ob.lane === 0) {
