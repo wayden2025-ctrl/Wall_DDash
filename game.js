@@ -179,47 +179,8 @@ function revivePlayer() {
     isReviving = true;
     reviveTimer = 3.2; // slight buffer
     
-    lastTime = performance.now();
-    requestAnimationFrame(reviveLoop);
-}
-
-function reviveLoop(timestamp) {
-    if (!isReviving) return;
-    
-    let rawDt = (timestamp - lastTime) / 1000;
-    if (rawDt > 0.1) rawDt = 0.1;
-    lastTime = timestamp;
-    
-    reviveTimer -= rawDt;
-    
-    draw(); // Redraw game state
-    
-    // Draw countdown
-    ctx.save();
-    ctx.fillStyle = `rgba(0, 255, 255, 1)`;
-    ctx.font = 'bold 150px Courier New';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.shadowBlur = 30;
-    ctx.shadowColor = '#ff00ff';
-    const num = Math.ceil(reviveTimer);
-    if (num > 0) {
-        // pulse effect
-        const scale = 1 + (num - reviveTimer);
-        ctx.translate(canvas.width/2, canvas.height/2);
-        ctx.scale(scale, scale);
-        ctx.fillText(num, 0, 0);
-    }
-    ctx.restore();
-    
-    if (reviveTimer <= 0) {
-        isReviving = false;
-        isPlaying = true;
-        lastTime = performance.now();
-        requestAnimationFrame(loop);
-    } else {
-        requestAnimationFrame(reviveLoop);
-    }
+    // We do NOT call a separate revive loop. 
+    // The main loop() will handle the revive countdown.
 }
 
 // ─── Player ────────────────────────────────────────────────────
@@ -228,7 +189,7 @@ const player = {
     y: 0,        // set on resize (near bottom)
     x: 0,        // computed from lane
     targetX: 0,
-    visualX: 0   // smoothly interpolated for drawing
+    visualX: 0
 };
 
 // ─── Obstacles & Particles ─────────────────────────────────────
@@ -251,6 +212,7 @@ let screenShakeIntensity = 0;
 let screenSpinTimer = 0;
 let screenSpinStartAngle = 0;
 let angleDeg = 0;
+let isReversed = false;
 let screenFlipTimer = 0;
 let screenFlipMaxTimer = 0;
 let freezeTime = 0;
@@ -469,10 +431,16 @@ function spawnObstacle() {
         type = 'spiral';
     } else if (rand < 0.20) {
         type = 'flipper';
+    } else if (rand < 0.30) {
+        type = 'wormhole';
     }
     
-    if (type === 'spiral' || type === 'flipper') {
-        yPos -= 500; // Spawns way offscreen, creating a massive gap before the spiral
+    if (isReversed) {
+        yPos = canvas.height + 150;
+    }
+
+    if (type === 'spiral' || type === 'flipper' || type === 'wormhole') {
+        yPos += (isReversed ? 500 : -500); // Spawns way offscreen, creating a massive gap before the special
         
         // Floating slightly off the wall, radius ~30
         obstacles.push({
@@ -725,9 +693,10 @@ function startGame() {
     spawnTimer = 1.5; // grace period before first spike
     scrollOffset = 0;
     
-    // Clear screen spin
+    // Clear screen spin, flip, and reverse
     screenSpinTimer = 0;
     screenFlipTimer = 0;
+    isReversed = false;
     canvas.style.transform = 'translate(-50%, -50%) rotate(0rad) scale(1)';
 
     startScreen.classList.add('hidden');
@@ -787,6 +756,34 @@ function loop(timestamp) {
     if (rawDt > 0.1) rawDt = 0.1;
     
     lastTime = timestamp;
+
+    if (isReviving) {
+        reviveTimer -= rawDt;
+        draw();
+        
+        ctx.save();
+        ctx.fillStyle = `rgba(0, 255, 255, 1)`;
+        ctx.font = 'bold 150px Courier New';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.shadowBlur = 30;
+        ctx.shadowColor = '#ff00ff';
+        const num = Math.ceil(reviveTimer);
+        if (num > 0) {
+            const scale = 1 + (num - reviveTimer);
+            ctx.translate(canvas.width/2, canvas.height/2);
+            ctx.scale(scale, scale);
+            ctx.fillText(num, 0, 0);
+        }
+        ctx.restore();
+        
+        if (reviveTimer <= 0) {
+            isReviving = false;
+            isPlaying = true;
+        }
+        requestAnimationFrame(loop);
+        return;
+    }
     
     // Hit stop logic
     if (freezeTime > 0) {
@@ -843,8 +840,13 @@ function loop(timestamp) {
         currentSpeed = baseSpeed + (timeSurvived * 15);
 
         // Smooth player position
-        const lerp = Math.min(1, 50 * dt); // extremely fast snap
-        player.visualX += (player.targetX - player.visualX) * lerp;
+        player.targetY = isReversed ? canvas.height * 0.3 : canvas.height - 220;
+        
+        const lerpX = Math.min(1, 50 * dt); // extremely fast snap
+        player.visualX += (player.targetX - player.visualX) * lerpX;
+        
+        const lerpY = Math.min(1, 3 * dt); // smooth transition for Y
+        player.y += (player.targetY - player.y) * lerpY;
         
         // Calculate distance to target to create a subtle vertical "arc" (slant) during dash
         const distToTarget = Math.abs(player.targetX - player.visualX);
@@ -920,15 +922,15 @@ function loop(timestamp) {
         // Update obstacles
         for (let i = obstacles.length - 1; i >= 0; i--) {
             const ob = obstacles[i];
-            ob.y += currentSpeed * dt;
+            ob.y += (isReversed ? -1 : 1) * currentSpeed * dt;
             
-            if (ob.type === 'spiral' || ob.type === 'flipper') {
+            if (ob.type === 'spiral' || ob.type === 'flipper' || ob.type === 'wormhole') {
                 ob.rotation += 5 * dt;
             }
 
             // Collision
             if (ob.lane === player.lane) {
-                if (ob.type === 'spiral' || ob.type === 'flipper') {
+                if (ob.type === 'spiral' || ob.type === 'flipper' || ob.type === 'wormhole') {
                     // Simple circle collision
                     const obX = ob.lane === 0 ? WALL_WIDTH + ob.radius + 15 : canvas.width - WALL_WIDTH - ob.radius - 15;
                     const obY = ob.y;
@@ -940,7 +942,21 @@ function loop(timestamp) {
                         const hitType = ob.type;
                         obstacles.splice(i, 1);
                         
-                        if (hitType === 'spiral') {
+                        if (hitType === 'wormhole') {
+                            isReversed = !isReversed; // Toggle gravity
+                            screenShakeIntensity = 4;
+                            screenShakeTime = 0.2;
+                            
+                            // Clear existing spikes to prevent unfair deaths while the player smoothly flies to the other side of the screen
+                            for (let k = obstacles.length - 1; k >= 0; k--) {
+                                if (obstacles[k].type === 'spike') {
+                                    obstacles.splice(k, 1);
+                                    if (k < i) {
+                                        i--; // Adjust outer loop index to prevent skipping elements or crashing
+                                    }
+                                }
+                            }
+                        } else if (hitType === 'spiral') {
                             screenSpinTimer = 5.0; // 5 seconds of spin
                             screenSpinStartAngle = angleDeg; // Capture current angle (could be 90 if flipped)
                             screenFlipTimer = 0; // Cancel any active flip
@@ -957,7 +973,10 @@ function loop(timestamp) {
                             screenSpinTimer = 0; // Cancel any active spin
                         }
                         
-                        playTone(hitType === 'spiral' ? 300 : 500, 0.3, 'sawtooth', 0.5); // Glitch sound
+                        let soundFreq = 500;
+                        if (hitType === 'spiral') soundFreq = 300;
+                        if (hitType === 'wormhole') soundFreq = 150;
+                        playTone(soundFreq, 0.3, 'sawtooth', 0.5); // Glitch sound
                         score += 100; // Bonus points for risk
                         
                         // Spawn glitch particles
@@ -969,7 +988,7 @@ function loop(timestamp) {
                                 vx: (Math.random() - 0.5) * 800,
                                 vy: (Math.random() - 0.5) * 800,
                                 life: 1.0,
-                                color: hitType === 'spiral' ? '#ff0055' : '#00ff55'
+                                color: hitType === 'spiral' ? '#ff0055' : (hitType === 'wormhole' ? '#00ffff' : '#00ff55')
                             });
                         }
                         continue;
@@ -980,38 +999,60 @@ function loop(timestamp) {
             }
 
             // Passed
-            if (!ob.passed && ob.y > player.y + PLAYER_RADIUS) {
+            const hasPassed = isReversed ? (ob.y < player.y - PLAYER_RADIUS) : (ob.y > player.y + PLAYER_RADIUS);
+            if (!ob.passed && hasPassed) {
                 ob.passed = true;
                 combo++;
                 if (combo > maxCombo) maxCombo = combo;
             }
 
             // Remove offscreen
-            if (ob.y > canvas.height + 50) obstacles.splice(i, 1);
+            if (isReversed) {
+                if (ob.y < -200) obstacles.splice(i, 1);
+            } else {
+                if (ob.y > canvas.height + 50) obstacles.splice(i, 1);
+            }
         }
     } // end if (isPlaying)
 
     // Update Shapes
     bgObjects.forEach(bg => {
-        bg.y += currentSpeed * dt * bg.speed * 0.001;
-        if (bg.y * canvas.height > canvas.height + bg.height + 50) {
-            bg.y = -(bg.height + 50) / canvas.height;
-            bg.x = Math.random();
-            if (bg.layer === 2) {
-                bg.width = 100 + Math.random() * 200;
-                bg.height = 300 + Math.random() * 500;
-                bg.type = Math.random() > 0.5 ? 'pillar' : 'frame';
-            } else {
-                bg.width = 30 + Math.random() * 80;
-                bg.height = 100 + Math.random() * 200;
-                bg.type = Math.random() > 0.3 ? 'frame' : 'lightstrip';
+        bg.y += (isReversed ? -1 : 1) * currentSpeed * dt * bg.speed * 0.001;
+        
+        if (isReversed) {
+            if (bg.y * canvas.height < -bg.height - 50) {
+                bg.y = (canvas.height + 50) / canvas.height;
+                bg.x = Math.random();
+                if (bg.layer === 2) {
+                    bg.width = 100 + Math.random() * 200;
+                    bg.height = 300 + Math.random() * 500;
+                    bg.type = Math.random() > 0.5 ? 'pillar' : 'frame';
+                } else {
+                    bg.width = 30 + Math.random() * 80;
+                    bg.height = 100 + Math.random() * 200;
+                    bg.type = Math.random() > 0.3 ? 'frame' : 'lightstrip';
+                }
+            }
+        } else {
+            if (bg.y * canvas.height > canvas.height + bg.height + 50) {
+                bg.y = -(bg.height + 50) / canvas.height;
+                bg.x = Math.random();
+                if (bg.layer === 2) {
+                    bg.width = 100 + Math.random() * 200;
+                    bg.height = 300 + Math.random() * 500;
+                    bg.type = Math.random() > 0.5 ? 'pillar' : 'frame';
+                } else {
+                    bg.width = 30 + Math.random() * 80;
+                    bg.height = 100 + Math.random() * 200;
+                    bg.type = Math.random() > 0.3 ? 'frame' : 'lightstrip';
+                }
             }
         }
     });
 
     // Update Matrix Streams
     matrixStreams.forEach(stream => {
-        stream.y += currentSpeed * dt * stream.speed * 0.001;
+        stream.y += (isReversed ? -1 : 1) * currentSpeed * dt * stream.speed * 0.001;
         
         // Glitch effect
         stream.glitchTimer -= dt;
@@ -1024,9 +1065,16 @@ function loop(timestamp) {
 
         // If head is completely off screen bottom (approximate length via fontSize assumption)
         const approxStreamHeight = (stream.length * 20) / canvas.height; 
-        if (stream.y - approxStreamHeight > 1.0) {
-            // Respawn
-            Object.assign(stream, createMatrixStream(false));
+        if (isReversed) {
+            if (stream.y + approxStreamHeight < 0.0) {
+                Object.assign(stream, createMatrixStream(false));
+                stream.y = 1.0 + approxStreamHeight;
+            }
+        } else {
+            if (stream.y - approxStreamHeight > 1.0) {
+                // Respawn
+                Object.assign(stream, createMatrixStream(false));
+            }
         }
     });
 
@@ -1293,12 +1341,48 @@ function draw() {
         
         ctx.save();
         
-        if (ob.type === 'spiral' || ob.type === 'flipper') {
+        if (ob.type === 'spiral' || ob.type === 'flipper' || ob.type === 'wormhole') {
             const obX = ob.lane === 0 ? WALL_WIDTH + ob.radius + 15 : w - WALL_WIDTH - ob.radius - 15;
             ctx.translate(obX, ob.y);
             ctx.rotate(ob.rotation);
             
-            if (ob.type === 'spiral') {
+            if (ob.type === 'wormhole') {
+                // Neon blue spiral diamond
+                ctx.shadowBlur = 25;
+                ctx.shadowColor = '#00ffff';
+                ctx.strokeStyle = '#00ffff';
+                ctx.lineWidth = 3;
+                
+                // Outer diamond
+                ctx.fillStyle = 'rgba(0, 255, 255, 0.2)';
+                ctx.beginPath();
+                ctx.moveTo(0, -ob.radius);
+                ctx.lineTo(ob.radius, 0);
+                ctx.lineTo(0, ob.radius);
+                ctx.lineTo(-ob.radius, 0);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                // Inner spiral
+                ctx.beginPath();
+                for (let i = 0; i < Math.PI * 6; i += 0.2) {
+                    const r = (i / (Math.PI * 6)) * (ob.radius * 0.8);
+                    const sx = Math.cos(-i) * r;
+                    const sy = Math.sin(-i) * r;
+                    if (i === 0) ctx.moveTo(sx, sy);
+                    else ctx.lineTo(sx, sy);
+                }
+                ctx.stroke();
+                
+                // Inner core
+                ctx.fillStyle = '#ffffff';
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(0, 0, ob.radius * 0.2, 0, Math.PI * 2);
+                ctx.fill();
+            } else if (ob.type === 'spiral') {
                 // Draw a spinning red spiral
                 ctx.shadowBlur = 20;
                 ctx.shadowColor = '#ff0055';
@@ -1362,6 +1446,11 @@ function draw() {
             }
             
         } else {
+            // Add a bright neon glow to spikes so they stand out more at high speeds
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = 'rgba(0, 255, 255, 0.9)'; // Bright cyan glow for high contrast
+            ctx.filter = 'brightness(1.5)'; // Boost the image brightness directly
+            
             if (ob.lane === 0) {
                 // Left wall
                 ctx.translate(WALL_WIDTH, ob.y);
@@ -1373,6 +1462,8 @@ function draw() {
                 ctx.translate(w - WALL_WIDTH - ob.depth, ob.y);
                 ctx.drawImage(ob.variant.img, 0, 0, ob.depth, ob.height);
             }
+            
+            ctx.filter = 'none'; // Reset filter
         }
         ctx.restore();
         ctx.globalAlpha = 1;
