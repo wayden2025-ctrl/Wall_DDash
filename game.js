@@ -352,15 +352,18 @@ window.addEventListener('keydown', (e) => {
     }
 });
 
-canvas.addEventListener('mousedown', (e) => {
+window.addEventListener('mousedown', (e) => {
+    // Ignore clicks on buttons to prevent double triggering or accidentally dashing when trying to restart
+    if (e.target.tagName === 'BUTTON') return;
     if (!isPlaying && !startScreen.classList.contains('hidden')) return;
     if (!isPlaying && !gameOverScreen.classList.contains('hidden')) return;
     switchLane();
 });
 
-canvas.addEventListener('touchstart', (e) => {
+window.addEventListener('touchstart', (e) => {
     if (e.target.tagName !== 'BUTTON') {
-        e.preventDefault();
+        // Prevent default touch behavior (like zooming or scrolling)
+        if (e.cancelable) e.preventDefault();
         if (!isPlaying && !startScreen.classList.contains('hidden')) return;
         if (!isPlaying && !gameOverScreen.classList.contains('hidden')) return;
         switchLane();
