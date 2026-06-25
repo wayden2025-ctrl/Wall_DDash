@@ -886,7 +886,7 @@ function loop(timestamp) {
                 x: player.visualX + (Math.random() - 0.5) * PLAYER_RADIUS * (isPremium ? 2.5 : 1.5),
                 y: player.visualY + (Math.random() - 0.5) * PLAYER_RADIUS * (isPremium ? 2.5 : 1.5),
                 vx: (Math.random() - 0.5) * (isPremium ? 150 : 60),
-                vy: Math.random() * (isPremium ? 500 : 300) + (isPremium ? 250 : 150),
+                vy: (Math.random() * (isPremium ? 500 : 300) + (isPremium ? 250 : 150)) * (isReversed ? -1 : 1),
                 color: pColor,
                 life: (isPremium ? 0.25 : 0.15) + Math.random() * 0.2
             });
@@ -900,9 +900,9 @@ function loop(timestamp) {
         if (Math.random() < 0.8) {
             particles.push({ size: 2 + Math.random()*3,
                 x: Math.random() * canvas.width,
-                y: canvas.height + 20, // start slightly offscreen bottom
+                y: isReversed ? -20 : canvas.height + 20, // start slightly offscreen top or bottom
                 vx: (Math.random() - 0.5) * 20,
-                vy: -currentSpeed * (0.1 + Math.random() * 0.2), // float up slowly relative to speed
+                vy: (isReversed ? 1 : -1) * currentSpeed * (0.1 + Math.random() * 0.2), // float relative to speed
                 color: Math.random() > 0.5 ? 'rgba(0, 255, 255, 0.4)' : 'rgba(255, 0, 255, 0.4)',
                 life: 1.5 + Math.random() * 1.0,
                 isAmbient: true
