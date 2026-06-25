@@ -109,6 +109,7 @@ const gameOverScreen = document.getElementById('game-over-screen');
 const startBtn = document.getElementById('start-btn');
 const restartBtn = document.getElementById('restart-btn');
 const finalScoreEl = document.getElementById('final-score');
+const highScoreEl = document.getElementById('high-score');
 const finalComboEl = document.getElementById('final-combo');
 const winScreen = document.getElementById('win-screen');
 const winScoreEl = document.getElementById('win-score');
@@ -802,6 +803,14 @@ function loop(timestamp) {
                     if (!isPlaying) {
                         gameOverScreen.classList.remove('hidden');
                         finalScoreEl.innerText = Math.floor(score);
+                        
+                        let highScore = parseInt(localStorage.getItem('wallDashHighScore') || '0', 10);
+                        if (Math.floor(score) > highScore) {
+                            highScore = Math.floor(score);
+                            localStorage.setItem('wallDashHighScore', highScore);
+                        }
+                        if (highScoreEl) highScoreEl.innerText = highScore;
+                        
                         finalComboEl.innerText = maxCombo;
                         const reviveBtn = document.getElementById('revive-btn');
                         if (reviveBtn) {
