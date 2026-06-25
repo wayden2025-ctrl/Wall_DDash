@@ -947,13 +947,11 @@ function loop(timestamp) {
                             screenShakeIntensity = 4;
                             screenShakeTime = 0.2;
                             
-                            // Clear existing spikes to prevent unfair deaths while the player smoothly flies to the other side of the screen
+                            // Clear all existing obstacles (spikes, spirals, flippers, etc) to prevent unfair deaths or double-toggles
                             for (let k = obstacles.length - 1; k >= 0; k--) {
-                                if (obstacles[k].type === 'spike') {
-                                    obstacles.splice(k, 1);
-                                    if (k < i) {
-                                        i--; // Adjust outer loop index to prevent skipping elements or crashing
-                                    }
+                                obstacles.splice(k, 1);
+                                if (k < i) {
+                                    i--; // Adjust outer loop index
                                 }
                             }
                         } else if (hitType === 'spiral') {
